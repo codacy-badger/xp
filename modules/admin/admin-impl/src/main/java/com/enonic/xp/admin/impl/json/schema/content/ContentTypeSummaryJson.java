@@ -3,10 +3,12 @@ package com.enonic.xp.admin.impl.json.schema.content;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 
 import com.enonic.xp.admin.impl.json.ChangeTraceableJson;
 import com.enonic.xp.admin.impl.json.ItemJson;
+import com.enonic.xp.admin.impl.json.config.ConfigJsonConverter;
 import com.enonic.xp.admin.impl.rest.resource.schema.content.ContentTypeIconUrlResolver;
 import com.enonic.xp.admin.impl.rest.resource.schema.content.LocaleMessageResolver;
 import com.enonic.xp.schema.content.ContentType;
@@ -130,6 +132,11 @@ public class ContentTypeSummaryJson
     public boolean isAllowChildContent()
     {
         return contentType.allowChildContent();
+    }
+
+    public ObjectNode getConfig()
+    {
+        return ConfigJsonConverter.DEFAULT.apply( contentType.getSchemaConfig() );
     }
 
     @Override

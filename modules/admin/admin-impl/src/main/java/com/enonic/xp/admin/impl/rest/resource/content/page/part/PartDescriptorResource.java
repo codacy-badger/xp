@@ -18,8 +18,6 @@ import javax.ws.rs.core.Response;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import com.google.common.collect.ImmutableList;
-
 import com.enonic.xp.admin.impl.json.content.page.region.PartDescriptorJson;
 import com.enonic.xp.admin.impl.json.content.page.region.PartDescriptorsJson;
 import com.enonic.xp.admin.impl.rest.resource.ResourceConstants;
@@ -51,14 +49,7 @@ public final class PartDescriptorResource
 
     private MixinService mixinService;
 
-    private PartDescriptorIconUrlResolver partDescriptorIconUrlResolver;
-
     private static final PartImageHelper HELPER = new PartImageHelper();
-
-    public PartDescriptorResource()
-    {
-        this.partDescriptorIconUrlResolver = new PartDescriptorIconUrlResolver();
-    }
 
     @GET
     public PartDescriptorJson getByKey( @QueryParam("key") final String partDescriptorKey )
@@ -67,8 +58,7 @@ public final class PartDescriptorResource
         final PartDescriptor descriptor = partDescriptorService.getByKey( key );
 
         final LocaleMessageResolver localeMessageResolver = new LocaleMessageResolver( this.localeService, descriptor.getApplicationKey() );
-        return new PartDescriptorJson( descriptor, localeMessageResolver, new InlineMixinResolver( mixinService ),
-                                       partDescriptorIconUrlResolver );
+        return new PartDescriptorJson( descriptor, localeMessageResolver, new InlineMixinResolver( mixinService ) );
     }
 
     @GET
@@ -79,8 +69,7 @@ public final class PartDescriptorResource
 
         final LocaleMessageResolver localeMessageResolver =
             new LocaleMessageResolver( this.localeService, ApplicationKey.from( applicationKey ) );
-        return new PartDescriptorsJson( descriptors, localeMessageResolver, new InlineMixinResolver( mixinService ),
-                                        partDescriptorIconUrlResolver );
+        return new PartDescriptorsJson( descriptors, localeMessageResolver, new InlineMixinResolver( mixinService ) );
     }
 
 
@@ -89,16 +78,12 @@ public final class PartDescriptorResource
     @Consumes(MediaType.APPLICATION_JSON)
     public PartDescriptorsJson getByApplications( final GetByApplicationsParams params )
     {
-        ImmutableList.Builder<PartDescriptorJson> partDescriptorsJsonBuilder = new ImmutableList.Builder();
-
-        params.getApplicationKeys().forEach( applicationKey -> {
-            partDescriptorsJsonBuilder.addAll( this.partDescriptorService.getByApplication( applicationKey ).
-                stream().
-                map( partDescriptor -> new PartDescriptorJson( partDescriptor, new LocaleMessageResolver( localeService, applicationKey ),
-                                                               new InlineMixinResolver( mixinService ), partDescriptorIconUrlResolver ) ).
-                collect( Collectors.toList() ) );
-        } );
-        return new PartDescriptorsJson( partDescriptorsJsonBuilder.build() );
+        return new PartDescriptorsJson( this.partDescriptorService.getByApplications( params.getApplicationKeys() ).
+            stream().
+            map( partDescriptor -> new PartDescriptorJson( partDescriptor,
+                                                           new LocaleMessageResolver( localeService, partDescriptor.getApplicationKey() ),
+                                                           new InlineMixinResolver( mixinService ) ) ).
+            collect( Collectors.toList() ) );
     }
 
     @GET

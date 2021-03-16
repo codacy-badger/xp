@@ -70,7 +70,7 @@ public final class LayoutDescriptorResource
     @Consumes(MediaType.APPLICATION_JSON)
     public LayoutDescriptorsJson getByApplications( final GetByApplicationsParams params )
     {
-        ImmutableList.Builder<LayoutDescriptorJson> layoutDescriptorsJsonBuilder = new ImmutableList.Builder();
+        ImmutableList.Builder<LayoutDescriptorJson> layoutDescriptorsJsonBuilder = new ImmutableList.Builder<>();
 
         params.getApplicationKeys().forEach( applicationKey -> {
             layoutDescriptorsJsonBuilder.addAll( this.layoutDescriptorService.getByApplication( applicationKey ).

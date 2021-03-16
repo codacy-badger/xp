@@ -1,7 +1,5 @@
 package com.enonic.xp.admin.impl.rest.resource.schema.xdata;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,14 +15,16 @@ import javax.ws.rs.core.MediaType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import com.google.common.collect.ImmutableList;
+
 import com.enonic.xp.admin.impl.json.schema.xdata.XDataJson;
 import com.enonic.xp.admin.impl.json.schema.xdata.XDataListJson;
 import com.enonic.xp.admin.impl.rest.resource.schema.content.LocaleMessageResolver;
-import com.enonic.xp.admin.impl.rest.resource.schema.mixin.ContentTypeNameWildcardResolver;
 import com.enonic.xp.admin.impl.rest.resource.schema.mixin.InlineMixinResolver;
 import com.enonic.xp.admin.impl.rest.resource.schema.mixin.MixinIconResolver;
 import com.enonic.xp.admin.impl.rest.resource.schema.mixin.MixinIconUrlResolver;
 import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.app.ApplicationWildcardResolver;
 import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentId;
 import com.enonic.xp.content.ContentService;
@@ -32,7 +32,6 @@ import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.jaxrs.JaxRsComponent;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
-import com.enonic.xp.schema.content.ContentTypeNames;
 import com.enonic.xp.schema.content.ContentTypeService;
 import com.enonic.xp.schema.content.GetContentTypeParams;
 import com.enonic.xp.schema.mixin.MixinService;
@@ -170,53 +169,17 @@ public final class XDataResource
         return result;
     }
 
-    private Boolean isXDataAllowed( final XDataName xDataName, final String allowContentType, final ContentTypeName contentTypeName )
+    private boolean isXDataAllowed( final XDataName xDataName, final String allowContentType, final ContentTypeName contentTypeName )
     {
-
-        if ( nullToEmpty( allowContentType ).isBlank() )
-        {
-            return true;
-        }
-
-        if ( allowContentType.equals( contentTypeName.toString() ) )
-        {
-            return true;
-        }
-
-        final ContentTypeNameWildcardResolver contentTypeNameWildcardResolver =
-            new ContentTypeNameWildcardResolver( this.contentTypeService );
-
-        final List<String> allowContentTypes =
-            nullToEmpty( allowContentType ).isBlank() ? new ArrayList<>() : Collections.singletonList( allowContentType );
-
-        if ( contentTypeNameWildcardResolver.anyTypeHasWildcard( allowContentTypes ) )
-        {
-            final ContentTypeNames validContentTypes = ContentTypeNames.from(
-                contentTypeNameWildcardResolver.resolveWildcards( allowContentTypes, xDataName.getApplicationKey() ) );
-
-            if ( validContentTypes.contains( contentTypeName ) )
-            {
-                return true;
-            }
-        }
-
-        final List<String> validContentTypes = contentTypeNameWildcardResolver.resolveContentTypeName( allowContentType );
-        return validContentTypes.contains( contentTypeName.toString() );
+        return nullToEmpty( allowContentType ).isBlank() ||
+            ApplicationWildcardResolver.predicate( xDataName.getApplicationKey(), allowContentType ).test( contentTypeName.toString() );
     }
 
     private XDataMappings filterXDataMappingsByContentType( final XDataMappings xDataMappings, final ContentTypeName contentTypeName )
     {
-        final XDataMappings.Builder filteredXDatas = XDataMappings.create();
-
-        xDataMappings.forEach( xDataMapping -> {
-
-            if ( isXDataAllowed( xDataMapping.getXDataName(), xDataMapping.getAllowContentTypes(), contentTypeName ) )
-            {
-                filteredXDatas.add( xDataMapping );
-            }
-        } );
-
-        return filteredXDatas.build();
+        return XDataMappings.from( xDataMappings.stream().
+            filter( xDataMapping -> isXDataAllowed( xDataMapping.getXDataName(), xDataMapping.getAllowContentTypes(), contentTypeName ) ).
+            collect( ImmutableList.toImmutableList() ) );
     }
 
     private XDatas getContentTypeXData( final Content content )

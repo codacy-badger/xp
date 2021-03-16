@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.enonic.xp.annotation.PublicApi;
 import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.app.ApplicationKeys;
 import com.enonic.xp.schema.content.validator.ContentTypeValidationResult;
 
 @PublicApi
@@ -18,4 +19,8 @@ public interface ContentTypeService
     Set<String> getMimeTypes( ContentTypeNames napes );
 
     ContentTypeValidationResult validate( ContentType type );
+
+    ContentTypeNames getAllNames();
+
+    ContentTypeNames getNames( ApplicationKeys applicationKeys );
 }

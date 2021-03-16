@@ -1,9 +1,11 @@
 package com.enonic.xp.admin.impl.rest.resource.content;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.enonic.xp.admin.impl.rest.resource.content.json.ContentSelectorQueryJson;
-import com.enonic.xp.admin.impl.rest.resource.schema.mixin.ContentTypeNameWildcardResolver;
+import com.enonic.xp.app.ApplicationWildcardResolver;
 import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.content.ContentQuery;
@@ -17,6 +19,7 @@ import com.enonic.xp.query.expr.LogicalExpr;
 import com.enonic.xp.query.expr.QueryExpr;
 import com.enonic.xp.query.expr.ValueExpr;
 import com.enonic.xp.query.parser.QueryParser;
+import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.schema.content.ContentTypeNames;
 import com.enonic.xp.schema.content.ContentTypeService;
 import com.enonic.xp.schema.relationship.RelationshipType;
@@ -32,7 +35,7 @@ public class ContentSelectorQueryJsonToContentQueryConverter
 
     private final ContentService contentService;
 
-    private final ContentTypeNameWildcardResolver contentTypeWildcardResolver;
+    private final ContentTypeService contentTypeService;
 
     private final RelationshipTypeService relationshipTypeService;
 
@@ -48,7 +51,7 @@ public class ContentSelectorQueryJsonToContentQueryConverter
         this.contentService = builder.contentService;
         this.relationshipTypeService = builder.relationshipTypeService;
         this.content = contentQueryJson.getContentId() != null ? contentService.getById( contentQueryJson.getContentId() ) : null;
-        this.contentTypeWildcardResolver = new ContentTypeNameWildcardResolver( builder.contentTypeService );
+        this.contentTypeService = builder.contentTypeService;
     }
 
     public ContentQuery createQuery()
@@ -65,15 +68,20 @@ public class ContentSelectorQueryJsonToContentQueryConverter
     private ContentTypeNames getContentTypeNamesFromJson()
     {
         List<String> contentTypeNames = this.contentQueryJson.getContentTypeNames();
-        if ( contentTypeNames.size() == 0 )
+        if ( contentTypeNames.isEmpty() )
         {
             return this.getContentTypeNamesFromRelationshipType();
         }
 
-        if ( this.content != null && this.contentTypeWildcardResolver.anyTypeHasWildcard( contentTypeNames ) )
+        if ( this.content != null )
         {
-            return ContentTypeNames.from(
-                this.contentTypeWildcardResolver.resolveWildcards( contentTypeNames, this.content.getType().getApplicationKey() ) );
+            final Predicate<ContentTypeName> filter =
+                ApplicationWildcardResolver.predicate( this.content.getType().getApplicationKey(), contentTypeNames,
+                                                       ContentTypeName::toString );
+            return ContentTypeNames.from( contentTypeService.getAllNames().
+                stream().
+                filter( filter ).
+                collect( Collectors.toList() ) );
         }
 
         return ContentTypeNames.from( contentTypeNames );

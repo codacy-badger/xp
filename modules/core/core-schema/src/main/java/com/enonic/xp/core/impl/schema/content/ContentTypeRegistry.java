@@ -1,20 +1,23 @@
 package com.enonic.xp.core.impl.schema.content;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.enonic.xp.app.Application;
+import com.google.common.collect.ImmutableList;
+
 import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.app.ApplicationKeys;
 import com.enonic.xp.app.ApplicationService;
 import com.enonic.xp.core.impl.schema.SchemaHelper;
 import com.enonic.xp.resource.ResourceService;
+import com.enonic.xp.schema.BaseSchema;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
+import com.enonic.xp.schema.content.ContentTypeNames;
 import com.enonic.xp.schema.content.ContentTypes;
 
 final class ContentTypeRegistry
@@ -23,30 +26,27 @@ final class ContentTypeRegistry
 
     private final BuiltinContentTypes builtInTypes;
 
-    protected ApplicationService applicationService;
+    private final ContentTypeLoader contentTypeLoader;
 
-    protected ResourceService resourceService;
+    private final ApplicationService applicationService;
 
-    public ContentTypeRegistry()
+    public ContentTypeRegistry( final ResourceService resourceService, final ApplicationService applicationService )
     {
+        this.applicationService = applicationService;
         this.builtInTypes = new BuiltinContentTypes();
-    }
-
-    private boolean isSystem( final ContentTypeName name )
-    {
-        return SchemaHelper.isSystem( name.getApplicationKey() );
+        this.contentTypeLoader = new ContentTypeLoader( resourceService );
     }
 
     public ContentType get( final ContentTypeName name )
     {
-        if ( isSystem( name ) )
+        if ( SchemaHelper.isSystem( name.getApplicationKey() ) )
         {
-            return this.builtInTypes.getAll().getContentType( name );
+            return this.builtInTypes.getContentType( name );
         }
 
         try
         {
-            return new ContentTypeLoader( this.resourceService ).get( name );
+            return contentTypeLoader.get( name );
         }
         catch ( final Exception e )
         {
@@ -57,40 +57,30 @@ final class ContentTypeRegistry
 
     public ContentTypes getByApplication( final ApplicationKey key )
     {
-        if ( SchemaHelper.isSystem( key ) )
-        {
-            return this.builtInTypes.getByApplication( key );
-        }
-
-        final List<ContentType> list = new ArrayList<>();
-        for ( final ContentTypeName name : findNames( key ) )
-        {
-            final ContentType type = get( name );
-            if ( type != null )
-            {
-                list.add( type );
-            }
-
-        }
-
-        return ContentTypes.from( list );
-    }
-
-    private Set<ContentTypeName> findNames( final ApplicationKey key )
-    {
-        return new ContentTypeLoader( this.resourceService ).findNames( key );
+        return ContentTypes.from( namesStream( ApplicationKeys.from( key ) ).map( this::get ).
+            filter( Objects::nonNull ).
+            collect( ImmutableList.toImmutableList() ) );
     }
 
     public ContentTypes getAll()
     {
-        final Set<ContentType> contentTypeList = new LinkedHashSet<>( this.builtInTypes.getAll().getList() );
+        return ContentTypes.from( Stream.concat( this.builtInTypes.getAll().stream(),
+                                                 namesStream( this.applicationService.getInstalledApplicationKeys() ).map( this::get ) ).
+            filter( Objects::nonNull ).
+            collect( ImmutableList.toImmutableList() ) );
+    }
 
-        for ( final Application application : this.applicationService.getInstalledApplications() )
-        {
-            final ContentTypes contentTypes = getByApplication( application.getKey() );
-            contentTypeList.addAll( contentTypes.getList() );
-        }
+    public ContentTypeNames getNames( final ApplicationKeys applicationKeys )
+    {
+        return ContentTypeNames.from( namesStream( applicationKeys ).collect( Collectors.toList() ) );
+    }
 
-        return ContentTypes.from( contentTypeList );
+    private Stream<ContentTypeName> namesStream( final ApplicationKeys applicationKeys )
+    {
+        return applicationKeys.
+            stream().
+            flatMap( key -> SchemaHelper.isSystem( key )
+                ? builtInTypes.getByApplication( key ).stream().map( BaseSchema::getName )
+                : contentTypeLoader.findNames( key ).stream() );
     }
 }

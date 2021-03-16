@@ -18,6 +18,8 @@ public final class XmlContentTypeParser
 
     private ApplicationRelativeResolver resolver;
 
+    private static final XmlInputTypeConfigMapper CONFIG_MAPPER = new XmlInputTypeConfigMapper();
+
     public XmlContentTypeParser builder( final ContentType.Builder builder )
     {
         this.builder = builder;
@@ -53,6 +55,7 @@ public final class XmlContentTypeParser
 
         final XmlFormMapper mapper = new XmlFormMapper( this.currentApplication );
         this.builder.form( mapper.buildForm( root.getChild( "form" ) ) );
+        this.builder.schemaConfig( CONFIG_MAPPER.build( root.getChild( "config" ) ) );
     }
 
     private XDataNames buildMetaData( final DomElement root )

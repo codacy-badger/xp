@@ -360,6 +360,11 @@ final class BuiltinContentTypes
         return this.contentTypes.filter( ( type ) -> type.getName().getApplicationKey().equals( key ) );
     }
 
+    public ContentType getContentType( final ContentTypeName contentTypeName )
+    {
+        return this.contentTypes.getContentType( contentTypeName );
+    }
+
     private Icon loadSchemaIcon( final String metaInfFolderName, final String name )
     {
         return SchemaHelper.loadIcon( getClass(), metaInfFolderName, name );

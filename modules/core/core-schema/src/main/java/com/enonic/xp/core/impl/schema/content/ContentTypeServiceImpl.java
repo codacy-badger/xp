@@ -2,10 +2,12 @@ package com.enonic.xp.core.impl.schema.content;
 
 import java.util.Set;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.app.ApplicationKeys;
 import com.enonic.xp.app.ApplicationService;
 import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.schema.content.ContentType;
@@ -23,11 +25,14 @@ public final class ContentTypeServiceImpl
 {
     private final ContentTypeRegistry registry;
 
-    private MixinService mixinService;
+    private final MixinService mixinService;
 
-    public ContentTypeServiceImpl()
+    @Activate
+    public ContentTypeServiceImpl( final @Reference ResourceService resourceService, @Reference final ApplicationService applicationService,
+                                   final @Reference MixinService mixinService )
     {
-        this.registry = new ContentTypeRegistry();
+        this.registry = new ContentTypeRegistry( resourceService, applicationService );
+        this.mixinService = mixinService;
     }
 
     @Override
@@ -77,21 +82,15 @@ public final class ContentTypeServiceImpl
         return validator.getResult();
     }
 
-    @Reference
-    public void setMixinService( final MixinService mixinService )
+    @Override
+    public ContentTypeNames getAllNames()
     {
-        this.mixinService = mixinService;
+        return ContentTypeNames.from( this.registry.getAll().getNames() );
     }
 
-    @Reference
-    public void setResourceService( final ResourceService resourceService )
+    @Override
+    public ContentTypeNames getNames( final ApplicationKeys applicationKeys )
     {
-        this.registry.resourceService = resourceService;
-    }
-
-    @Reference
-    public void setApplicationService( final ApplicationService applicationService )
-    {
-        this.registry.applicationService = applicationService;
+        return this.registry.getNames( applicationKeys );
     }
 }

@@ -1,18 +1,16 @@
 package com.enonic.xp.admin.impl.json.form;
 
-import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import com.enonic.xp.admin.impl.json.config.ConfigJsonConverter;
 import com.enonic.xp.admin.impl.rest.resource.schema.content.LocaleMessageResolver;
 import com.enonic.xp.data.Value;
 import com.enonic.xp.form.Input;
-import com.enonic.xp.inputtype.InputTypeConfig;
 import com.enonic.xp.inputtype.InputTypeName;
 import com.enonic.xp.inputtype.InputTypeProperty;
 
@@ -114,15 +112,7 @@ public class InputJson
 
     public ObjectNode getConfig()
     {
-        final InputTypeConfig config = this.input.getInputTypeConfig();
-
-        final ObjectNode json = JsonNodeFactory.instance.objectNode();
-        for ( final String name : config.getNames() )
-        {
-            json.set( name, toJson( config.getProperties( name ) ) );
-        }
-
-        return json;
+        return new ConfigJsonConverter( this::toJson ).apply( this.input.getInputTypeConfig() );
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -134,17 +124,6 @@ public class InputJson
     public void setDefaultValue( final Value defaultValue )
     {
         this.defaultValue = defaultValue;
-    }
-
-    private ArrayNode toJson( final Collection<InputTypeProperty> properties )
-    {
-        final ArrayNode json = JsonNodeFactory.instance.arrayNode();
-        for ( final InputTypeProperty property : properties )
-        {
-            json.add( toJson( property ) );
-        }
-
-        return json;
     }
 
     private ObjectNode toJson( final InputTypeProperty property )

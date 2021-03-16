@@ -1,5 +1,7 @@
 package com.enonic.xp.admin.impl.json.content.page;
 
+import java.util.List;
+
 import com.google.common.collect.ImmutableList;
 
 import com.enonic.xp.admin.impl.rest.resource.schema.content.LocaleMessageResolver;
@@ -10,9 +12,9 @@ import com.enonic.xp.page.PageDescriptors;
 @SuppressWarnings("UnusedDeclaration")
 public class PageDescriptorListJson
 {
-    private final ImmutableList<PageDescriptorJson> pageDescriptors;
+    private final List<PageDescriptorJson> pageDescriptors;
 
-    public PageDescriptorListJson( final ImmutableList<PageDescriptorJson> pageDescriptors )
+    public PageDescriptorListJson( final List<PageDescriptorJson> pageDescriptors )
     {
         this.pageDescriptors = pageDescriptors;
     }
@@ -31,7 +33,7 @@ public class PageDescriptorListJson
         this.pageDescriptors = builder.build();
     }
 
-    public ImmutableList<PageDescriptorJson> getDescriptors()
+    public List<PageDescriptorJson> getDescriptors()
     {
         return pageDescriptors;
     }

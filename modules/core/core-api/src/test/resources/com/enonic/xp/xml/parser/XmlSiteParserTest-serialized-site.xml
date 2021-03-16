@@ -16,4 +16,76 @@
     <response-processor name="filter1" order="10"/>
     <response-processor name="filter2" order="10"/>
   </processors>
+
+  allow parts `article-show` and `article-time` from this app on `article` and `article-v2` content types from this app. Deny these parts
+  anywhere else
+
+  ${app}:blog content type only allow parts starting with ${app}:blog-
+  <components>
+    <part>
+      <match>${app}:blog-*</match>
+      <allow-on-content-type>
+        <match>${app}:blog</match>
+        <!-- deny everything else. As it is a restrictive model -->
+      </allow-on-content-type>
+    </part>
+
+
+    /a/b/
+
+    /a/b/* -> c1
+    /a/* -> c2
+
+    <part order="10">
+      <match>*</match>
+    </part>
+
+    <part order="20">
+      <match>blog-*</match>
+    </part>
+
+
+    <part> <!-- allow parts `article-show` and `article-time` from this app on `article` and `article-v2` content types from this app. Deny these parts anywhere else -->
+      <match>article-show</match> <!-- at least one pattern requited -->
+      <match>article-time</match>
+      <allow-on-content-type>
+        <match>.*</match>
+        <match>article
+        </match> <!-- at least one allow requited. If we allow zero or more, it could get confusing, as it would implicitly mean "deny all" -->
+        <match>article-v2</match>
+        <!-- deny everything else. As it is a restrictive model -->
+      </allow-on-content-type>
+      <stuff>
+
+      </stuff>
+    </part>
+    <part>
+      <match></match>
+    </part>
+    <layout>
+      <match></match>
+    </layout>
+    <part> <!-- Same as above, but using regex -->
+      <match>article-(:?show|time)</match>
+      <allowed-on-types>
+        <content-type allow="true">article(:?-v2)?</content-type>
+        <content-type allow="false">article(:?-v2)?</content-type>
+      </allowed-on-types>
+    </part>
+
+    <part> <!-- deny `external.app:undesirable-part` part on all content types in this app -->
+      <match matcher="absolute">external\.app:undesirable-part
+      </match> <!-- matcher="absolute" is a trick here, so component descriptor key has to be specified with the application key -->
+      <allowed-on-types>
+        <content-type>(?!)</content-type> <!-- any regex that never matches would work. (?!) is one of the simplest. -->
+      </allowed-on-types>
+    </part>
+
+    <part> <!-- deny `external.app:bad-part` part globally -->
+      <match matcher="absolute">external\.app:bad-part</match>
+      <allowed-on-types>
+        <content-type matcher="absolute">(?!)</content-type>
+      </allowed-on-types>
+    </part>
+  </components>
 </site>
