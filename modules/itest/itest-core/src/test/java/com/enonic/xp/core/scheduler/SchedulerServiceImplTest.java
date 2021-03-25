@@ -24,6 +24,8 @@ import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.impl.scheduler.CalendarServiceImpl;
+import com.enonic.xp.impl.scheduler.SchedulerExecutorService;
+import com.enonic.xp.impl.scheduler.SchedulerExecutorServiceImpl;
 import com.enonic.xp.impl.scheduler.SchedulerServiceImpl;
 import com.enonic.xp.node.NodeAccessException;
 import com.enonic.xp.node.NodeAlreadyExistAtPathException;
@@ -51,6 +53,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -71,10 +75,8 @@ class SchedulerServiceImplTest
         build();
 
     @Mock
-    private HazelcastInstance hazelcastInstance;
+    private SchedulerExecutorService schedulerExecutorService;
 
-    @Mock
-    private IScheduledExecutorService scheduledExecutorService;
 
     private SchedulerServiceImpl schedulerService;
 
@@ -95,9 +97,7 @@ class SchedulerServiceImplTest
     {
         super.setUpNode();
 
-        when( hazelcastInstance.getScheduledExecutorService( anyString() ) ).thenReturn( scheduledExecutorService );
-
-        schedulerService = new SchedulerServiceImpl( indexService, repositoryService, nodeService, hazelcastInstance );
+        schedulerService = new SchedulerServiceImpl( indexService, repositoryService, nodeService, schedulerExecutorService );
 
         adminContext().runWith( () -> schedulerService.initialize() );
 
@@ -252,7 +252,7 @@ class SchedulerServiceImplTest
             editor( edit -> edit.enabled = false ).
             build() ) );
 
-        verify( future, times( 1 ) ).dispose();
+        verify( schedulerExecutorService, times( 1 ) ).dispose( eq( "test" ) );
     }
 
     @Test
@@ -331,7 +331,7 @@ class SchedulerServiceImplTest
 
         adminContext().callWith( () -> schedulerService.delete( name ) );
 
-        verify( future, times( 1 ) ).dispose();
+        verify( schedulerExecutorService, times( 1 ) ).dispose( eq( "test" ) );
     }
 
     @Test
@@ -462,8 +462,8 @@ class SchedulerServiceImplTest
         when( future.getHandler() ).thenReturn( handler );
         when( handler.getTaskName() ).thenReturn( name.getValue() );
 
-        final Map futures = Map.of( mock( Member.class ), List.of( future ) );
-        when( scheduledExecutorService.getAllScheduledFutures() ).
+        final Map futures = Map.of( name.getValue(), future );
+        when( schedulerExecutorService.getAllFutures() ).
             thenReturn( futures );
 
         return future;

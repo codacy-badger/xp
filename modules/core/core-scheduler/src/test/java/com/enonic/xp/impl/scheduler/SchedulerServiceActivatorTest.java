@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SchedulerServiceActivatorTest
 {
-    @Mock
+    @Mock(stubOnly = true)
     private BundleContext bundleContext;
 
     @Mock
@@ -42,10 +42,7 @@ class SchedulerServiceActivatorTest
     private RepositoryService repositoryService;
 
     @Mock(stubOnly = true)
-    private HazelcastInstance hazelcastInstance;
-
-    @Mock(stubOnly = true)
-    private IScheduledExecutorService scheduledExecutorService;
+    private SchedulerExecutorService schedulerExecutorService;
 
     @BeforeEach
     void setUp()
@@ -58,9 +55,7 @@ class SchedulerServiceActivatorTest
     void lifecycle()
     {
         final SchedulerServiceActivator activator =
-            new SchedulerServiceActivator( repositoryService, indexService, nodeService, hazelcastInstance );
-
-        when( hazelcastInstance.getScheduledExecutorService( isA( String.class ) ) ).thenReturn( scheduledExecutorService );
+            new SchedulerServiceActivator( repositoryService, indexService, nodeService, schedulerExecutorService );
 
         when( bundleContext.registerService( same( SchedulerService.class ), any( SchedulerService.class ), isNull() ) ).
             thenReturn( service );
