@@ -1,5 +1,6 @@
 package com.enonic.xp.core.impl.content;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import com.google.common.base.Preconditions;
@@ -13,20 +14,19 @@ import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentAccessException;
 import com.enonic.xp.content.ContentAlreadyExistsException;
 import com.enonic.xp.content.ContentPath;
+import com.enonic.xp.content.CreateContentParams;
+import com.enonic.xp.content.MoveContentListener;
+import com.enonic.xp.content.MoveContentParams;
+import com.enonic.xp.content.MoveContentsResult;
 import com.enonic.xp.data.PropertyTree;
-import com.enonic.xp.node.CreateNodeParams;
 import com.enonic.xp.node.MoveNodeException;
-import com.enonic.xp.node.MoveNodeListener;
-import com.enonic.xp.node.MoveNodeParams;
-import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeAccessException;
 import com.enonic.xp.node.NodeAlreadyExistAtPathException;
-import com.enonic.xp.node.NodeId;
-import com.enonic.xp.node.RefreshMode;
+import com.enonic.xp.schema.content.ContentTypeName;
 
 final class ArchiveContentCommand
     extends AbstractArchiveCommand
-    implements MoveNodeListener
+    implements MoveContentListener
 {
     private final ArchiveContentParams params;
 
@@ -50,9 +50,7 @@ final class ArchiveContentCommand
 
         try
         {
-            final ArchiveContentsResult archivedContents = doExecute();
-            this.nodeService.refresh( RefreshMode.ALL );
-            return archivedContents;
+            return doExecute();
         }
         catch ( MoveNodeException e )
         {
@@ -70,45 +68,56 @@ final class ArchiveContentCommand
 
     private ArchiveContentsResult doExecute()
     {
-        final Node contentToArchive = nodeService.getById( NodeId.from( params.getContentId() ) );
+        final Content contentToArchive = contentService.getById(  params.getContentId() );
 
-        final Node container = nodeService.create( containerParams( contentToArchive ) );
+        final Content container = contentService.create( containerParams( contentToArchive ) );
 
-        final MoveNodeParams.Builder builder = MoveNodeParams.create().
-            nodeId( NodeId.from( params.getContentId() ) ).
-            parentNodePath( container.path() ).
-            moveListener( this );
+        final MoveContentParams.Builder builder = MoveContentParams.create().
+            contentId(  params.getContentId()  ).
+            parentContentPath( container.getPath() ).
+            moveContentListener( this );
 
-        final Node movedNode = nodeService.move( builder.build() );
-
-        final Content movedContent = translator.fromNode( movedNode, true );
+        final MoveContentsResult result = contentService.move( builder.build() );
 
         return ArchiveContentsResult.create().
-            addArchived( movedContent.getId() ).
+            addArchived( result.getMovedContents() ).
             build();
     }
 
-    private CreateNodeParams containerParams( final Node contentToArchive )
+    private CreateContentParams containerParams( final Content contentToArchive )
     {
         final String uniqueName = UUID.randomUUID().toString();
+        final String displayName = Instant.now().toString();
 
         final PropertyTree data = new PropertyTree();
-        data.setString( "oldParentPath", contentToArchive.parentPath().toString() );
+        data.setString( "oldParentPath", contentToArchive.getParentPath().toString() );
 
-        return CreateNodeParams.create().parent( ArchiveConstants.ARCHIVE_ROOT_PATH ).
+        return CreateContentParams.create().
+            parent( ArchiveConstants.ARCHIVE_ROOT_PATH ).
             name( uniqueName ).
-            setNodeId( NodeId.from( uniqueName ) ).
-            nodeType( ArchiveConstants.ARCHIVE_NODE_TYPE ).
-            data( data ).
+            displayName( displayName ).
+//            id( NodeId.from( uniqueName ) ).
+//            type( ArchiveConstants.ARCHIVE_CONTENT_TYPE ).
+            type( ContentTypeName.folder() ).
+            contentData( data ).
             build();
     }
 
     @Override
-    public void nodesMoved( final int count )
+    public void contentMoved( final int count )
     {
         if ( archiveContentListener != null )
         {
             archiveContentListener.contentArchived( count );
+        }
+    }
+
+    @Override
+    public void setTotal( final int count )
+    {
+        if ( archiveContentListener != null )
+        {
+            archiveContentListener.setTotal( count );
         }
     }
 

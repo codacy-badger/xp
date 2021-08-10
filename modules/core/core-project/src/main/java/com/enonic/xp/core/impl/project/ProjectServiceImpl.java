@@ -28,7 +28,6 @@ import com.enonic.xp.attachment.CreateAttachments;
 import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
-import com.enonic.xp.core.impl.project.init.ArchiveInitializer;
 import com.enonic.xp.core.impl.project.init.ContentInitializer;
 import com.enonic.xp.core.impl.project.init.IssueInitializer;
 import com.enonic.xp.data.PropertySet;
@@ -153,7 +152,7 @@ public class ProjectServiceImpl
             build().
             initialize();
 
-        ArchiveInitializer.create().
+       /* ArchiveInitializer.create().
             setIndexService( indexService ).
             setNodeService( nodeService ).
             repositoryId( params.getName().getRepoId() ).
@@ -163,7 +162,7 @@ public class ProjectServiceImpl
                 execute() ).
             forceInitialization( params.isForceInitialization() ).
             build().
-            initialize();
+            initialize();*/
 
         return Project.from( repositoryService.get( params.getName().getRepoId() ) );
     }

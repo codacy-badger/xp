@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -758,8 +757,7 @@ public class ContentServiceImpl
     public ArchiveContentsResult archive( final ArchiveContentParams params )
     {
         final ArchiveContentsResult result = ArchiveContentCommand.create( params ).
-            nodeService( this.nodeService ).
-            translator( this.translator ).
+            contentService( this ).
             archiveListener( params.getArchiveContentListener() ).
             build().
             execute();
@@ -773,8 +771,7 @@ public class ContentServiceImpl
     public RestoreContentsResult restore( final RestoreContentParams params )
     {
         final RestoreContentsResult result = RestoreContentCommand.create( params ).
-            nodeService( this.nodeService ).
-            translator( this.translator ).
+            contentService( this ).
             restoreListener( params.getRestoreContentListener() ).
             build().
             execute();
@@ -784,14 +781,13 @@ public class ContentServiceImpl
         return result;
     }
 
-    private static final Pattern ARCHIVED_PATTERN = Pattern.compile( "^(?:/archive/)([a-zA-Z0-9_\\-.:]+)/([^/]+)$" );
+//    private static final Pattern ARCHIVED_PATTERN = Pattern.compile( "^(?:/archive/)([a-zA-Z0-9_\\-.:]+)/([^/]+)$" );
 
     @Override
     public List<ArchivedContainerLayer> listArchived( final ListContentsParams params)
     {
         return ListArchivedContentCommand.create().
-            nodeService( nodeService ).
-            translator( translator ).
+            contentService( this ).
             params( params ).
             build().
             execute();
@@ -801,8 +797,7 @@ public class ContentServiceImpl
     public List<ArchivedContainer> resolveArchivedByContents( final ResolveArchivedParams params)
     {
         return ResolveArchivedByContentsCommand.create().
-            nodeService( nodeService ).
-            translator( translator ).
+            contentService( this ).
             params( params ).
             build().
             execute();

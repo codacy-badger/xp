@@ -11,19 +11,16 @@ import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentAccessException;
 import com.enonic.xp.content.ContentAlreadyExistsException;
 import com.enonic.xp.content.ContentPath;
+import com.enonic.xp.content.MoveContentListener;
+import com.enonic.xp.content.MoveContentParams;
+import com.enonic.xp.content.MoveContentsResult;
 import com.enonic.xp.node.MoveNodeException;
-import com.enonic.xp.node.MoveNodeListener;
-import com.enonic.xp.node.MoveNodeParams;
-import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeAccessException;
 import com.enonic.xp.node.NodeAlreadyExistAtPathException;
-import com.enonic.xp.node.NodeId;
-import com.enonic.xp.node.NodePath;
-import com.enonic.xp.node.RefreshMode;
 
 final class RestoreContentCommand
     extends AbstractArchiveCommand
-    implements MoveNodeListener
+    implements MoveContentListener
 {
     private final RestoreContentParams params;
 
@@ -47,9 +44,7 @@ final class RestoreContentCommand
 
         try
         {
-            final RestoreContentsResult restoredContents = doExecute();
-            this.nodeService.refresh( RefreshMode.ALL );
-            return restoredContents;
+            return doExecute();
         }
         catch ( MoveNodeException e )
         {
@@ -67,36 +62,40 @@ final class RestoreContentCommand
 
     private RestoreContentsResult doExecute()
     {
-        final Node contentToRestore = nodeService.getById( NodeId.from( params.getContentId() ) );
-        final Node container = nodeService.getByPath( contentToRestore.parentPath() );
+        final Content contentToRestore = contentService.getById( params.getContentId() );
+        final Content container = contentService.getByPath( contentToRestore.getParentPath() );
 
-        final String oldSourceParentPath = container.data().getString( "oldParentPath" );
+        final String oldSourceParentPath = container.getData().getString( "oldParentPath" );
 
-        final NodePath oldParentPath = params.getPath() != null
-            ? ContentNodeHelper.translateContentPathToNodePath( params.getPath() )
-            : !Strings.nullToEmpty( oldSourceParentPath ).isBlank() ? NodePath.create( oldSourceParentPath ).
-                build() : ContentNodeHelper.translateContentPathToNodePath( ContentPath.ROOT );
+        final ContentPath oldParentPath = params.getPath() != null
+            ? params.getPath()
+            : !Strings.nullToEmpty( oldSourceParentPath ).isBlank()
+                ? ContentPath.from( oldSourceParentPath )
+                :  ContentPath.ROOT ;
 
-        final MoveNodeParams.Builder builder = MoveNodeParams.create().
-            nodeId( NodeId.from( params.getContentId() ) ).
-            parentNodePath( oldParentPath ).
-            moveListener( this );
+        final MoveContentParams moveParams =
+            MoveContentParams.create().contentId(  params.getContentId() ).parentContentPath( oldParentPath ).moveContentListener( this ).build();
 
-        final Node movedNode = nodeService.move( builder.build() );
+        final MoveContentsResult result = contentService.move( moveParams );
 
-        final Content movedContent = translator.fromNode( movedNode, true );
-
-        return RestoreContentsResult.create().
-            addRestored( movedContent.getId() ).
-            build();
+        return RestoreContentsResult.create().addRestored( result.getMovedContents() ).build();
     }
 
     @Override
-    public void nodesMoved( final int count )
+    public void contentMoved( final int count )
     {
         if ( restoreContentListener != null )
         {
             restoreContentListener.contentRestored( count );
+        }
+    }
+
+    @Override
+    public void setTotal( final int count )
+    {
+        if ( restoreContentListener != null )
+        {
+            restoreContentListener.setTotal( count );
         }
     }
 

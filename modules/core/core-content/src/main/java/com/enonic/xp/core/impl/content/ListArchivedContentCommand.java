@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -15,12 +14,12 @@ import com.enonic.xp.archive.ArchiveConstants;
 import com.enonic.xp.archive.ArchivedContainerId;
 import com.enonic.xp.archive.ArchivedContainerLayer;
 import com.enonic.xp.archive.ListContentsParams;
+import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentId;
-import com.enonic.xp.node.FindNodesByQueryResult;
-import com.enonic.xp.node.Node;
-import com.enonic.xp.node.NodeHit;
-import com.enonic.xp.node.NodeId;
-import com.enonic.xp.node.NodeQuery;
+import com.enonic.xp.content.ContentPath;
+import com.enonic.xp.content.ContentQuery;
+import com.enonic.xp.content.FindContentIdsByQueryResult;
+import com.enonic.xp.content.FindContentPathsByQueryResult;
 import com.enonic.xp.query.expr.CompareExpr;
 import com.enonic.xp.query.expr.FieldExpr;
 import com.enonic.xp.query.expr.QueryExpr;
@@ -51,12 +50,12 @@ final class ListArchivedContentCommand
             params.getParent() != null ? fetchContainerLayer( params.getParent() ) : fetchAllContainersRootLayers();
 
         return archived.entrySet().stream().map( entry -> {
-            final Node container = nodeService.getById( NodeId.from( entry.getKey() ) );
+            final Content container = contentService.getById( ContentId.from( entry.getKey() ) );
 
             return ArchivedContainerLayer.create()
                 .id( ArchivedContainerId.from( entry.getKey() ) )
                 .addContentIds( entry.getValue() )
-                .archiveTime( container.getTimestamp() )
+                .archiveTime( container.getCreatedTime() )
                 .parent( params.getParent() != null ? params.getParent() : null )
                 .build();
         } ).collect( Collectors.toList() );
@@ -66,27 +65,21 @@ final class ListArchivedContentCommand
     {
         final Map<String, Set<ContentId>> archived = new HashMap<>();
 
-        final FindNodesByQueryResult result = nodeService.findByQuery( NodeQuery.create()
-                                                                           .query( QueryExpr.from(
-                                                                               CompareExpr.like( FieldExpr.from( "_parentPath" ),
+        final FindContentPathsByQueryResult result = contentService.findPaths( ContentQuery.create()
+                                                                           .queryExpr( QueryExpr.from(
+                                                                               CompareExpr.like( FieldExpr.from( "_path" ),
                                                                                                  ValueExpr.string( "/" +
                                                                                                                        ArchiveConstants.ARCHIVE_ROOT_NAME +
-                                                                                                                       "/*" ) ) ) )
-                                                                           .withPath( true )
+                                                                                                                       "/*/*/" ) ) ) )
                                                                            .size( -1 )
                                                                            .build() );
 
-        for ( final NodeHit hit : result.getNodeHits() )
+        for ( final ContentPath path : result.getContentPaths() )
         {
-            final Matcher matcher = ARCHIVED_CONTENT_PATTERN.matcher( hit.getNodePath().toString() );
-            if ( matcher.matches() )
-            {
-
-                final String containerId = matcher.group( 1 );
+                final String containerId = path.getElement( 1 );
 
                 final Set<ContentId> contentsInContainer = archived.computeIfAbsent( containerId, id -> new HashSet() );
-                contentsInContainer.add( ContentId.from( hit.getNodeId().toString() ) );
-            }
+                contentsInContainer.add( contentService.getByPath( path ).getId() );
         }
         return archived;
     }
@@ -95,22 +88,21 @@ final class ListArchivedContentCommand
     {
         final Map<String, Set<ContentId>> archived = new HashMap<>();
 
-        final String parentPath = nodeService.getById( NodeId.from( parent ) ).path().asRelative().toString();
+        final ContentPath parentPath = contentService.getById( parent ).getParentPath().asRelative();
 
-        final FindNodesByQueryResult result = nodeService.findByQuery( NodeQuery.create()
-                                                                           .query( QueryExpr.from(
+        final FindContentIdsByQueryResult result = contentService.find( ContentQuery.create()
+                                                                           .queryExpr( QueryExpr.from(
                                                                                CompareExpr.eq( FieldExpr.from( "_parentPath" ),
                                                                                                ValueExpr.string( "/" + parentPath ) ) ) )
-                                                                           .withPath( true )
                                                                            .size( -1 )
                                                                            .build() );
 
-        for ( final NodeHit hit : result.getNodeHits() )
-        {
-            final String containerId = hit.getNodePath().getElementAsString( 1 );
+        final String containerId = parentPath.getElement( 1 );
 
+        for ( final ContentId contentId : result.getContentIds() )
+        {
             final Set<ContentId> contentsInContainer = archived.computeIfAbsent( containerId, id -> new HashSet() );
-            contentsInContainer.add( ContentId.from( hit.getNodeId().toString() ) );
+            contentsInContainer.add( contentId );
         }
 
         return archived;

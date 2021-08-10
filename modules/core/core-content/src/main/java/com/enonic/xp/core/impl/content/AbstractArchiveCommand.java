@@ -2,46 +2,34 @@ package com.enonic.xp.core.impl.content;
 
 import com.google.common.base.Preconditions;
 
-import com.enonic.xp.node.NodeService;
+import com.enonic.xp.content.ContentService;
 
 abstract class AbstractArchiveCommand
 {
-    final NodeService nodeService;
-
-    final ContentNodeTranslator translator;
+    final ContentService contentService;
 
     AbstractArchiveCommand( final Builder builder )
     {
-        this.nodeService = builder.nodeService;
-        this.translator = builder.translator;
+        this.contentService = builder.contentService;
     }
 
     public static class Builder<B extends Builder<B>>
     {
-        private NodeService nodeService;
-
-        private ContentNodeTranslator translator;
+        private ContentService contentService;
 
         Builder()
         {
         }
 
-        public B nodeService( final NodeService nodeService )
+        public B contentService( final ContentService contentService )
         {
-            this.nodeService = nodeService;
-            return (B) this;
-        }
-
-        public B translator( final ContentNodeTranslator translator )
-        {
-            this.translator = translator;
+            this.contentService = contentService;
             return (B) this;
         }
 
         void validate()
         {
-            Preconditions.checkNotNull( nodeService, "nodeService cannot be null" );
-            Preconditions.checkNotNull( translator, "translator cannot be null" );
+            Preconditions.checkNotNull( contentService, "contentService cannot be null" );
         }
     }
 }
