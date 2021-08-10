@@ -22,6 +22,11 @@ final class MovedEventSyncCommand
         return new Builder();
     }
 
+    private ContentPath getRoot( final Content content )
+    {
+        return content.getPath().getAltRoot() != null ? ContentPath.from( "/", content.getPath().getAltRoot() ) : ContentPath.ROOT;
+    }
+
     @Override
     protected void doSync()
     {
@@ -29,12 +34,13 @@ final class MovedEventSyncCommand
         {
             final Content sourceParent =
                 params.getSourceContext().callWith( () -> contentService.getByPath( params.getSourceContent().getParentPath() ) );
-            final Content sourceRoot = params.getSourceContext().callWith( () -> contentService.getByPath( ContentPath.ROOT ) );
+            final Content sourceRoot =
+                params.getSourceContext().callWith( () -> contentService.getByPath( getRoot( params.getSourceContent() ) ) );
 
             params.getTargetContext().runWith( () -> {
                 final ContentPath targetParentPath = contentService.contentExists( sourceParent.getId() )
                     ? contentService.getById( sourceParent.getId() ).getPath()
-                    : sourceRoot.getId().equals( sourceParent.getId() ) ? ContentPath.ROOT : null;
+                    : sourceRoot.getId().equals( sourceParent.getId() ) ? getRoot( params.getSourceContent() ) : null;
 
                 if ( targetParentPath != null )
                 {
@@ -44,17 +50,17 @@ final class MovedEventSyncCommand
 
                         if ( !params.getTargetContent().getPath().equals( newPath ) )
                         {
-                            contentService.rename( RenameContentParams.create().
-                                contentId( params.getTargetContent().getId() ).
-                                newName( ContentName.from( newPath.getName() ) ).
-                                build() );
+                            contentService.rename( RenameContentParams.create()
+                                                       .contentId( params.getTargetContent().getId() )
+                                                       .newName( ContentName.from( newPath.getName() ) )
+                                                       .build() );
                         }
 
-                        contentService.move( MoveContentParams.create().
-                            contentId( params.getTargetContent().getId() ).
-                            parentContentPath( targetParentPath ).
-                            stopInherit( false ).
-                            build() );
+                        contentService.move( MoveContentParams.create()
+                                                 .contentId( params.getTargetContent().getId() )
+                                                 .parentContentPath( targetParentPath )
+                                                 .stopInherit( false )
+                                                 .build() );
 
                     }
                 }

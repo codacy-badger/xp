@@ -238,7 +238,7 @@ public class ContentDataSerializer
         contentAsData.ifNotNull().addString( OWNER, content.getOwner() != null ? content.getOwner().toString() : null );
         contentAsData.ifNotNull().addString( LANGUAGE, content.getLanguage() != null ? content.getLanguage().toLanguageTag() : null );
         contentAsData.ifNotNull().addInstant( MODIFIED_TIME, content.getModifiedTime() );
-        contentAsData.ifNotNull().addString( MODIFIER, modifier.toString() );
+        contentAsData.ifNotNull().addString( MODIFIER, modifier != null ? modifier.toString() : null );
         contentAsData.ifNotNull().addString( CREATOR, content.getCreator().toString() );
         contentAsData.ifNotNull().addInstant( CREATED_TIME, content.getCreatedTime() );
         contentAsData.ifNotNull().addString( ORIGIN_PROJECT,

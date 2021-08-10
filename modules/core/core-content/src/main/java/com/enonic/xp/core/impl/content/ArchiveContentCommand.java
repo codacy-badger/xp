@@ -13,6 +13,9 @@ import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentAccessException;
 import com.enonic.xp.content.ContentAlreadyExistsException;
 import com.enonic.xp.content.ContentPath;
+import com.enonic.xp.content.ContentPropertyNames;
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.node.CreateNodeParams;
 import com.enonic.xp.node.MoveNodeException;
@@ -23,6 +26,7 @@ import com.enonic.xp.node.NodeAccessException;
 import com.enonic.xp.node.NodeAlreadyExistAtPathException;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.RefreshMode;
+import com.enonic.xp.schema.content.ContentTypeName;
 
 final class ArchiveContentCommand
     extends AbstractArchiveCommand
@@ -94,6 +98,10 @@ final class ArchiveContentCommand
 
         final PropertyTree data = new PropertyTree();
         data.setString( "oldParentPath", contentToArchive.parentPath().toString() );
+        data.setString( ContentPropertyNames.TYPE, ContentTypeName.folder().toString() );
+        data.setSet( ContentPropertyNames.DATA, new PropertySet() );
+        data.setString( ContentPropertyNames.CREATOR, ContextAccessor.current().getAuthInfo().getUser().toString() );
+        data.setString( ContentPropertyNames.MODIFIER, ContextAccessor.current().getAuthInfo().getUser().toString() );
 
         return CreateNodeParams.create().parent( ArchiveConstants.ARCHIVE_ROOT_PATH ).
             name( uniqueName ).

@@ -10,7 +10,6 @@ import com.google.common.io.ByteSource;
 
 import com.enonic.xp.content.Content;
 import com.enonic.xp.content.ContentAlreadyExistsException;
-import com.enonic.xp.content.ContentId;
 import com.enonic.xp.content.ContentInheritType;
 import com.enonic.xp.content.ContentPath;
 import com.enonic.xp.content.ImportContentParams;
@@ -41,18 +40,23 @@ final class CreatedEventSyncCommand
             params.getSourceContext().runWith( () -> {
                 if ( contentService.contentExists( params.getSourceContent().getParentPath() ) )
                 {
-                    final ContentId parentId = contentService.getByPath( params.getSourceContent().getParentPath() ).getId();
+                    final Content parent = contentService.getByPath( params.getSourceContent().getParentPath() );
                     params.getTargetContext().runWith( () -> {
 
                         if ( params.getSourceContent().getParentPath().isRoot() )
                         {
-                            contentService.importContent( createImportParams( params, ContentPath.ROOT, null ) );
+                            contentService.importContent( createImportParams( params,
+                                                                              params.getSourceContent().getParentPath().getAltRoot() != null
+                                                                                  ? ContentPath.from( "/", params.getSourceContent()
+                                                                                  .getParentPath()
+                                                                                  .getAltRoot() )
+                                                                                  : ContentPath.ROOT, null ) );
                             return;
                         }
 
-                        if ( contentService.contentExists( parentId ) )
+                        if ( contentService.contentExists( parent.getId() ) )
                         {
-                            final Content targetParent = contentService.getById( parentId );
+                            final Content targetParent = contentService.getById( parent.getId() );
 
                             contentService.importContent( createImportParams( params, targetParent.getPath(),
                                                                               targetParent.getChildOrder().isManualOrder()
@@ -75,30 +79,28 @@ final class CreatedEventSyncCommand
     {
         final BinaryAttachments.Builder builder = BinaryAttachments.create();
 
-        params.getSourceContent().getAttachments().
-            forEach( attachment -> {
-                final ByteSource binary = params.getSourceContext().callWith(
-                    () -> contentService.getBinary( params.getSourceContent().getId(), attachment.getBinaryReference() ) );
-                builder.add( new BinaryAttachment( attachment.getBinaryReference(), binary ) );
-            } );
+        params.getSourceContent().getAttachments().forEach( attachment -> {
+            final ByteSource binary = params.getSourceContext()
+                .callWith( () -> contentService.getBinary( params.getSourceContent().getId(), attachment.getBinaryReference() ) );
+            builder.add( new BinaryAttachment( attachment.getBinaryReference(), binary ) );
+        } );
 
         final ContentPath targetPath = buildNewPath( parentPath, params.getSourceContent().getName() );
 
-        final EnumSet<ContentInheritType> inheritTypes = params.getSourceContent().getName().toString().
-            equals( targetPath.getName() )
+        final EnumSet<ContentInheritType> inheritTypes = params.getSourceContent().getName().toString().equals( targetPath.getName() )
             ? EnumSet.allOf( ContentInheritType.class )
             : EnumSet.complementOf( EnumSet.of( ContentInheritType.NAME ) );
 
-        return ImportContentParams.create().
-            importContent( params.getSourceContent() ).
-            targetPath( targetPath ).
-            binaryAttachments( builder.build() ).
-            inherit( inheritTypes ).
-            originProject( ProjectName.from( params.getSourceContext().getRepositoryId() ) ).
-            importPermissionsOnCreate( false ).
-            dryRun( false ).
-            insertManualStrategy( insertManualStrategy ).
-            build();
+        return ImportContentParams.create()
+            .importContent( params.getSourceContent() )
+            .targetPath( targetPath )
+            .binaryAttachments( builder.build() )
+            .inherit( inheritTypes )
+            .originProject( ProjectName.from( params.getSourceContext().getRepositoryId() ) )
+            .importPermissionsOnCreate( false )
+            .dryRun( false )
+            .insertManualStrategy( insertManualStrategy )
+            .build();
     }
 
     public static class Builder

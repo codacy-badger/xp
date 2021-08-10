@@ -1,6 +1,7 @@
 package com.enonic.xp.content;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -21,12 +22,50 @@ public final class ContentPath
 
     private final String refString;
 
+    private final String altRoot;
+
     private ContentPath( final Builder builder )
     {
         Preconditions.checkNotNull( builder.elements );
         this.absolute = builder.absolute;
+        this.altRoot = builder.altRoot;
         this.elements = builder.elements.build();
         this.refString = ( this.absolute ? ELEMENT_DIVIDER : "" ) + String.join( ELEMENT_DIVIDER, elements );
+    }
+
+    public static ContentPath from( final String path, final String altRoot )
+    {
+        final Iterable<String> pathElements = Splitter.on( ELEMENT_DIVIDER ).omitEmptyStrings().split( path );
+        boolean absolute = path.startsWith( ELEMENT_DIVIDER );
+        return create().elements( pathElements ).absolute( absolute ).altRoot( altRoot ).build();
+    }
+
+    public static ContentPath from( final String path )
+    {
+        return from( path, null );
+    }
+
+    public static ContentPath from( final ContentPath parent, final String name )
+    {
+        return create().elements( parent.elements )
+            .absolute( parent.isAbsolute() )
+            .addElement( name )
+            .altRoot( parent.getAltRoot() )
+            .build();
+    }
+
+    public static ContentPath from( final ContentPath parent, final ContentPath relative )
+    {
+        final Builder builder = create().elements( parent.elements );
+        builder.addElements( relative.elements );
+        builder.absolute( parent.isAbsolute() );
+        builder.altRoot( parent.getAltRoot() );
+        return builder.build();
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
     }
 
     public String getElement( final int index )
@@ -61,7 +100,7 @@ public final class ContentPath
         final int subIndex = size - deep;
         final List<String> parentElements = this.elements.subList( 0, subIndex );
 
-        return create().absolute( absolute ).elements( parentElements ).build();
+        return create().absolute( absolute ).elements( parentElements ).altRoot( altRoot ).build();
     }
 
     public boolean isAbsolute()
@@ -81,7 +120,7 @@ public final class ContentPath
             return this;
         }
 
-        return new ContentPath.Builder( this ).absolute( false ).build();
+        return new ContentPath.Builder( this ).absolute( false ).altRoot( altRoot ).build();
     }
 
     public ContentPath asAbsolute()
@@ -91,7 +130,7 @@ public final class ContentPath
             return this;
         }
 
-        return new ContentPath.Builder( this ).absolute( true ).build();
+        return new ContentPath.Builder( this ).absolute( true ).altRoot( altRoot ).build();
     }
 
     public boolean hasName()
@@ -122,6 +161,11 @@ public final class ContentPath
         return true;
     }
 
+    public String getAltRoot()
+    {
+        return altRoot;
+    }
+
     @Override
     public boolean equals( final Object o )
     {
@@ -136,7 +180,7 @@ public final class ContentPath
 
         final ContentPath that = (ContentPath) o;
 
-        return refString.equals( that.refString );
+        return Objects.equals(refString, that.refString) && Objects.equals(altRoot, that.altRoot);
     }
 
     @Override
@@ -156,37 +200,13 @@ public final class ContentPath
         return refString;
     }
 
-    public static ContentPath from( final String path )
-    {
-        final Iterable<String> pathElements = Splitter.on( ELEMENT_DIVIDER ).omitEmptyStrings().split( path );
-        boolean absolute = path.startsWith( ELEMENT_DIVIDER );
-        return create().elements( pathElements ).absolute( absolute ).build();
-    }
-
-    public static ContentPath from( final ContentPath parent, final String name )
-    {
-        return create().elements( parent.elements ).absolute( parent.isAbsolute() ).addElement( name ).build();
-    }
-
-    public static ContentPath from( final ContentPath parent, final ContentPath relative )
-    {
-        final Builder builder = create().elements( parent.elements );
-        builder.addElements( relative.elements );
-        builder.absolute( parent.isAbsolute() );
-        return builder.build();
-    }
-
-
-    public static Builder create()
-    {
-        return new Builder();
-    }
-
     public static final class Builder
     {
         private ImmutableList.Builder<String> elements;
 
         private boolean absolute = true;
+
+        private String altRoot;
 
         private Builder()
         {
@@ -203,6 +223,12 @@ public final class ContentPath
         public Builder absolute( final boolean value )
         {
             this.absolute = value;
+            return this;
+        }
+
+        public Builder altRoot( final String altRoot )
+        {
+            this.altRoot = altRoot;
             return this;
         }
 

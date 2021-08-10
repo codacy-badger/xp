@@ -81,9 +81,13 @@ public class ContentConstants
 
     public static final String CONTENT_ROOT_NAME = "content";
 
+    public static final String ARCHIVE_ROOT_NAME = "archive";
+
     public static final NodePath CONTENT_ROOT_PARENT = NodePath.ROOT;
 
     public static final NodePath CONTENT_ROOT_PATH = NodePath.create( CONTENT_ROOT_PARENT, CONTENT_ROOT_NAME ).build();
+
+    public static final NodePath ARCHIVE_ROOT_PATH = NodePath.create( CONTENT_ROOT_PARENT, ARCHIVE_ROOT_NAME ).build();
 
     public static final NodeType CONTENT_NODE_COLLECTION = NodeType.from( "content" );
 
