@@ -21,6 +21,7 @@ import com.enonic.xp.security.SecurityService;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,6 +52,8 @@ class ProjectServiceActivatorTest
     @Mock(stubOnly = true)
     EventPublisher eventPublisher;
 
+    private ProjectConfig config;
+
     @BeforeEach
     void setUp()
     {
@@ -59,6 +62,8 @@ class ProjectServiceActivatorTest
 
         final Node mockNode = Node.create().id( NodeId.from( "1" ) ).parentPath( NodePath.ROOT ).build();
         when( nodeService.create( any() ) ).thenReturn( mockNode );
+
+        config = mock( ProjectConfig.class, invocation -> invocation.getMethod().getDefaultValue() );
     }
 
     @Test
@@ -66,7 +71,7 @@ class ProjectServiceActivatorTest
     {
         final ProjectServiceActivator activator =
             new ProjectServiceActivator( repositoryService, indexService, nodeService, securityService, projectPermissionsContextManager,
-                                         eventPublisher );
+                                         eventPublisher, config );
 
         when( bundleContext.registerService( same( ProjectService.class ), any( ProjectService.class ), isNull() ) ).
             thenReturn( service );
