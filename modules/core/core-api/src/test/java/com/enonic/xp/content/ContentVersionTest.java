@@ -19,31 +19,30 @@ public class ContentVersionTest
         final Instant now1 = Instant.now();
         final Instant now2 = Instant.now();
 
-        final ContentVersionPublishInfo publishInfo = ContentVersionPublishInfo.create().
-            message( "My version 1" ).
-            publisher( PrincipalKey.ofAnonymous() ).
-            timestamp( Instant.ofEpochSecond( 1562056003L ) ).
-            contentPublishInfo( ContentPublishInfo.create().
-                first( Instant.now() ).
-                from( Instant.now() ).
-                to( Instant.now().plus( 3, ChronoUnit.DAYS ) ).
-                build() ).
-            build();
+        final ContentVersionPublishInfo publishInfo = ContentVersionPublishInfo.create()
+            .message( "My version 1" )
+            .type( ContentVersionPublishInfo.CommitType.ARCHIVED )
+            .publisher( PrincipalKey.ofAnonymous() )
+            .timestamp( Instant.ofEpochSecond( 1562056003L ) )
+            .contentPublishInfo( ContentPublishInfo.create()
+                                     .first( Instant.now() )
+                                     .from( Instant.now() )
+                                     .to( Instant.now().plus( 3, ChronoUnit.DAYS ) )
+                                     .build() )
+            .build();
 
-        final WorkflowInfo workflowInfo = WorkflowInfo.create().
-            state( WorkflowState.READY ).
-            build();
+        final WorkflowInfo workflowInfo = WorkflowInfo.create().state( WorkflowState.READY ).build();
 
-        final ContentVersion version = ContentVersion.create().
-            id( ContentVersionId.from( "a" ) ).
-            modified( now1 ).
-            timestamp( now2 ).
-            modifier( PrincipalKey.ofAnonymous() ).
-            displayName( "contentVersion" ).
-            comment( "comment" ).
-            publishInfo( publishInfo ).
-            workflowInfo( workflowInfo ).
-            build();
+        final ContentVersion version = ContentVersion.create()
+            .id( ContentVersionId.from( "a" ) )
+            .modified( now1 )
+            .timestamp( now2 )
+            .modifier( PrincipalKey.ofAnonymous() )
+            .displayName( "contentVersion" )
+            .comment( "comment" )
+            .publishInfo( publishInfo )
+            .workflowInfo( workflowInfo )
+            .build();
 
         assertEquals( ContentVersionId.from( "a" ), version.getId() );
         assertEquals( now1, version.getModified() );

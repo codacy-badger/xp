@@ -11,10 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.enonic.xp.archive.ArchiveContentParams;
+import com.enonic.xp.archive.RestoreContentParams;
 import com.enonic.xp.content.Content;
+import com.enonic.xp.content.ContentConstants;
 import com.enonic.xp.content.ContentId;
 import com.enonic.xp.content.ContentInheritType;
 import com.enonic.xp.content.ContentName;
+import com.enonic.xp.content.ContentNotFoundException;
 import com.enonic.xp.content.ContentPath;
 import com.enonic.xp.content.DeleteContentParams;
 import com.enonic.xp.content.DuplicateContentParams;
@@ -30,6 +34,7 @@ import com.enonic.xp.content.SetContentChildOrderParams;
 import com.enonic.xp.content.UpdateContentParams;
 import com.enonic.xp.content.WorkflowInfo;
 import com.enonic.xp.content.WorkflowState;
+import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.core.impl.content.ParentContentSynchronizer;
 import com.enonic.xp.core.impl.content.ProjectContentEventListener;
 import com.enonic.xp.data.PropertyTree;
@@ -91,6 +96,21 @@ public class ProjectContentEventListenerTest
 
         compareSynched( sourceContent, targetContent );
         assertEquals( sourceProject.getName(), targetContent.getOriginProject() );
+    }
+
+    @Test
+    public void testCreatedInMaster()
+        throws InterruptedException
+    {
+        final Content sourceContent = ContextBuilder.from( sourceContext )
+            .branch( ContentConstants.BRANCH_MASTER )
+            .build()
+            .callWith( () -> createContent( ContentPath.ROOT, "name" ) );
+
+        handleEvents();
+
+        assertThrows( ContentNotFoundException.class,
+                      () -> targetContext.callWith( () -> contentService.getById( sourceContent.getId() ) ) );
     }
 
     @Test
@@ -310,16 +330,66 @@ public class ProjectContentEventListenerTest
 
         targetContext.callWith( () -> createContent( sourceContent2.getPath(), "content" ) );
 
-        sourceContext.runWith( () -> contentService.move( MoveContentParams.create().
-            contentId( sourceContent1.getId() ).
-            parentContentPath( sourceContent2.getPath() ).
-            build() ) );
+        sourceContext.runWith( () -> contentService.move(
+            MoveContentParams.create().contentId( sourceContent1.getId() ).parentContentPath( sourceContent2.getPath() ).build() ) );
 
         handleEvents();
 
         final Content targetMovedContent = targetContext.callWith( () -> contentService.getById( sourceContent1.getId() ) );
 
         assertEquals( "/content2/content-1", targetMovedContent.getPath().toString() );
+    }
+
+    @Test
+    public void testArchived()
+        throws InterruptedException
+    {
+        final Content sourceContent = sourceContext.callWith( () -> createContent( ContentPath.ROOT, "content" ) );
+        final Content sourceChild = sourceContext.callWith( () -> createContent( sourceContent.getPath(), "child" ) );
+
+        handleEvents();
+
+        sourceContext.runWith( () -> contentService.archive( ArchiveContentParams.create().contentId( sourceContent.getId() ).build() ) );
+
+        handleEvents();
+
+        final Content targetContent = targetArchiveContext.callWith( () -> contentService.getById( sourceContent.getId() ) );
+        final Content targetChild = targetArchiveContext.callWith( () -> contentService.getById( sourceChild.getId() ) );
+
+        assertEquals( "/content", targetContent.getPath().toString() );
+        assertEquals( "/content/child", targetChild.getPath().toString() );
+    }
+
+    @Test
+    public void testRestored()
+        throws InterruptedException
+    {
+        final Content sourceContent = sourceContext.callWith( () -> createContent( ContentPath.ROOT, "content" ) );
+        final Content sourceChild = sourceContext.callWith( () -> createContent( sourceContent.getPath(), "child" ) );
+
+        handleEvents();
+
+        sourceContext.runWith( () -> contentService.archive( ArchiveContentParams.create().contentId( sourceContent.getId() ).build() ) );
+
+        handleEvents();
+
+        final Content targetChild = targetArchiveContext.callWith( () -> contentService.getById( sourceChild.getId() ) );
+
+        sourceContext.runWith( () -> contentService.restore( RestoreContentParams.create().contentId( targetChild.getId() ).build() ) );
+
+        handleEvents();
+
+        final Content targetRestoredChild = targetContext.callWith( () -> contentService.getById( sourceChild.getId() ) );
+
+        sourceContext.runWith( () -> contentService.restore(
+            RestoreContentParams.create().contentId( sourceContent.getId() ).path( targetRestoredChild.getPath() ).build() ) );
+
+        handleEvents();
+
+        final Content targetRestoredContent = targetContext.callWith( () -> contentService.getById( sourceContent.getId() ) );
+
+        assertEquals( "/child", targetRestoredChild.getPath().toString() );
+        assertEquals( "/child/content", targetRestoredContent.getPath().toString() );
     }
 
     @Test
