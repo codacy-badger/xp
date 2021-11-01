@@ -11,9 +11,9 @@ public interface IndexServiceInternal
 {
     void createIndex( CreateIndexRequest request );
 
-    void updateIndex( String indexName, UpdateIndexSettings settings );
+    void updateIndices( UpdateIndexSettings settings, String... indices );
 
-    void deleteIndices( String... indexNames );
+    void deleteIndices( String... indices );
 
     boolean indicesExists( String... indices );
 
@@ -21,7 +21,7 @@ public interface IndexServiceInternal
 
     void openIndices( String... indices );
 
-    boolean waitForYellowStatus( String... indexNames );
+    boolean waitForYellowStatus( String... indices );
 
     IndexSettings getIndexSettings( RepositoryId repositoryId, IndexType indexType );
 

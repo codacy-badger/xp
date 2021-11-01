@@ -1,6 +1,5 @@
 package com.enonic.xp.repo.impl.elasticsearch.snapshot;
 
-import org.elasticsearch.action.admin.cluster.snapshots.restore.RestoreSnapshotResponse;
 import org.elasticsearch.snapshots.RestoreInfo;
 
 import com.enonic.xp.node.RestoreResult;
@@ -8,17 +7,15 @@ import com.enonic.xp.repository.RepositoryId;
 
 class RestoreResultFactory
 {
-    static RestoreResult create( final RestoreSnapshotResponse response, final RepositoryId respositoryId )
+    static RestoreResult create( final RestoreInfo restoreInfo, final RepositoryId respositoryId )
     {
-        final RestoreInfo restoreInfo = response.getRestoreInfo();
-
         if ( restoreInfo.failedShards() > 0 )
         {
             return RestoreResult.create().
                 failed( true ).
                 name( restoreInfo.name() ).
                 indices( restoreInfo.indices() ).
-                message( "Restore failed, " + response.getRestoreInfo().failedShards() + " of " + response.getRestoreInfo().totalShards() +
+                message( "Restore failed, " + restoreInfo.failedShards() + " of " + restoreInfo.totalShards() +
                              " shards failed" ).
                 build();
         }
@@ -27,7 +24,7 @@ class RestoreResultFactory
             repositoryId( respositoryId ).
             name( restoreInfo.name() ).
             indices( restoreInfo.indices() ).
-            message( "Restore successfull, " + response.getRestoreInfo().successfulShards() + " shards restored" ).
+            message( "Restore successful, " + restoreInfo.successfulShards() + " shards restored" ).
             build();
     }
 

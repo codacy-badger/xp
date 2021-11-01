@@ -35,7 +35,7 @@ public final class SimpleExecutor
 
     /**
      * Shut downs {@link ExecutorService} and awaits its termination for specified duration.
-     * Allows to warn about not tasks awaiting execution via neverCommenced.
+     * Allows to warn about tasks awaiting execution via neverCommenced.
      *
      * @param awaitTerminationDuration time to await termination.
      * @param neverCommenced           consumer of tasks that never commenced execution. Called only if such tasks exist.

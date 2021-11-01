@@ -27,7 +27,13 @@ public class TaskManagerExecutorImpl
     @Deactivate
     public void deactivate()
     {
-        simpleExecutor.shutdownAndAwaitTermination( Duration.ofSeconds( 5 ), neverCommenced -> LOG.warn( "Not all tasks were executed" ) );
+        final boolean notAllTasksCompleted = simpleExecutor.shutdownAndAwaitTermination( Duration.ofSeconds( 5 ),
+                                                                                         neverCommenced -> LOG.warn(
+                                                                                             "Not all tasks were executed" ) );
+        if ( !notAllTasksCompleted )
+        {
+            LOG.warn( "Not all tasks have completed" );
+        }
     }
 
     @Override

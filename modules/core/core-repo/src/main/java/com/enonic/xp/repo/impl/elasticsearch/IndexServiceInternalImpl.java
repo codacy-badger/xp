@@ -1,6 +1,7 @@
 package com.enonic.xp.repo.impl.elasticsearch;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.elasticsearch.ElasticsearchException;
@@ -11,9 +12,11 @@ import org.elasticsearch.action.admin.cluster.state.ClusterStateRequestBuilder;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.action.admin.indices.close.CloseIndexAction;
 import org.elasticsearch.action.admin.indices.close.CloseIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.close.CloseIndexResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsAction;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequestBuilder;
@@ -21,21 +24,20 @@ import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRespon
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
 import org.elasticsearch.action.admin.indices.open.OpenIndexAction;
 import org.elasticsearch.action.admin.indices.open.OpenIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.open.OpenIndexResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsResponse;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.IndexNotFoundException;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Stopwatch;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.index.IndexType;
@@ -67,8 +69,6 @@ public class IndexServiceInternalImpl
     private static final String CLUSTER_STATE_TIMEOUT = "5s";
 
     private static final String GET_SETTINGS_TIMEOUT = "5s";
-
-    private static final String CLUSTER_HEALTH_TIMEOUT = "10s";
 
     private Client client;
 
@@ -127,24 +127,23 @@ public class IndexServiceInternalImpl
         }
     }
 
-
     @Override
-    public void updateIndex( final String indexName, final UpdateIndexSettings settings )
+    public void updateIndices( final UpdateIndexSettings settings, final String... indices )
     {
-        LOG.info( "updating index {}", indexName );
+        LOG.info( "Updating indices {}", Arrays.toString( indices ) );
 
         final UpdateSettingsRequest updateSettingsRequest =
-            new UpdateSettingsRequest().indices( indexName ).settings( settings.getSettingsAsString() );
+            new UpdateSettingsRequest().indices( indices ).settings( settings.getSettingsAsString() );
         try
         {
             final UpdateSettingsResponse updateSettingsResponse =
                 client.admin().indices().updateSettings( updateSettingsRequest ).actionGet( UPDATE_INDEX_TIMEOUT );
 
-            LOG.info( "Index {} updated with status {}", indexName, updateSettingsResponse.isAcknowledged() );
+            LOG.info( "Indices {} updated with status {}", indices, updateSettingsResponse.isAcknowledged() );
         }
         catch ( ElasticsearchException e )
         {
-            throw new IndexException( "Failed to update index: " + indexName, e );
+            throw new IndexException( "Failed to update indices: " + Arrays.toString( indices ), e );
         }
     }
 
@@ -202,11 +201,18 @@ public class IndexServiceInternalImpl
     }
 
     @Override
-    public void deleteIndices( String... indexNames )
+    public void deleteIndices( String... indices )
     {
-        for ( final String indexName : indexNames )
+        final DeleteIndexRequest req = new DeleteIndexRequest( indices );
+        try
         {
-            doDeleteIndex( indexName );
+            LOG.info( "Deleting indices {}", Arrays.toString( indices ) );
+            final DeleteIndexResponse response = client.admin().indices().delete( req ).actionGet( DELETE_INDEX_TIMEOUT );
+            LOG.info( "Deleted indices {} with status {}", Arrays.toString( indices ), response.isAcknowledged() );
+        }
+        catch ( ElasticsearchException e )
+        {
+            LOG.warn( "Failed to delete indices {}", Arrays.toString( indices ) );
         }
     }
 
@@ -222,22 +228,18 @@ public class IndexServiceInternalImpl
     }
 
     @Override
-    public boolean waitForYellowStatus( final String... indexNames )
+    public boolean waitForYellowStatus( final String... indices )
     {
-        ClusterHealthRequest request = new ClusterHealthRequest( indexNames );
-
-        request.waitForYellowStatus().timeout( CLUSTER_HEALTH_TIMEOUT );
+        final ClusterHealthRequest request = new ClusterHealthRequest( indices ).waitForYellowStatus();
 
         final ClusterHealthResponse response;
         try
         {
-            final Stopwatch timer = Stopwatch.createStarted();
             response = this.client.admin().cluster().health( request ).actionGet();
-            timer.stop();
-            LOG.debug( "ElasticSearch cluster '{}' " +
-                           "health (timedOut={}, timeOutValue={}, used={}): Status={}, nodes={}, active shards={}, indices={}",
-                       response.getClusterName(), response.isTimedOut(), CLUSTER_HEALTH_TIMEOUT, timer, response.getStatus(),
-                       response.getNumberOfNodes(), response.getActiveShards(), response.getIndices() );
+            LOG.debug(
+                "ElasticSearch cluster '{}' health (timedOut={}, timeOutValue={}): Status={}, nodes={}, active shards={}, indices={}",
+                response.getClusterName(), response.isTimedOut(), request.timeout(), response.getStatus(), response.getNumberOfNodes(),
+                response.getActiveShards(), response.getIndices() );
         }
         catch ( Exception e )
         {
@@ -257,58 +259,34 @@ public class IndexServiceInternalImpl
     @Override
     public void closeIndices( final String... indices )
     {
-        for ( final String indexName : indices )
-        {
-            CloseIndexRequestBuilder closeIndexRequestBuilder =
-                new CloseIndexRequestBuilder( this.client.admin().indices(), CloseIndexAction.INSTANCE ).setIndices( indexName );
+        LOG.info( "Closing indices {}", Arrays.toString( indices ) );
 
-            try
-            {
-                this.client.admin().indices().close( closeIndexRequestBuilder.request() ).actionGet();
-                LOG.info( "Closed index " + indexName );
-            }
-            catch ( IndexNotFoundException e )
-            {
-                LOG.warn( "Could not close index [" + indexName + "], not found" );
-            }
-        }
+        CloseIndexRequestBuilder closeIndexRequestBuilder =
+            new CloseIndexRequestBuilder( this.client.admin().indices(), CloseIndexAction.INSTANCE ).setIndicesOptions(
+                IndicesOptions.lenientExpandOpen() ).setIndices( indices );
+
+        final CloseIndexResponse response = this.client.admin().indices().close( closeIndexRequestBuilder.request() ).actionGet();
+        LOG.info( "Closed indices {} with status {}", Arrays.toString( indices ), response.isAcknowledged() );
     }
 
     @Override
     public void openIndices( final String... indices )
     {
-        for ( final String indexName : indices )
-        {
-            OpenIndexRequestBuilder openIndexRequestBuilder =
-                new OpenIndexRequestBuilder( this.client.admin().indices(), OpenIndexAction.INSTANCE ).setIndices( indexName );
-
-            try
-            {
-                this.client.admin().indices().open( openIndexRequestBuilder.request() ).actionGet();
-                LOG.info( "Opened index " + indexName );
-            }
-            catch ( ElasticsearchException e )
-            {
-                LOG.error( "Could not open index [" + indexName + "]", e );
-                throw new IndexException( "Cannot open index [" + indexName + "]", e );
-            }
-        }
-    }
-
-    private void doDeleteIndex( final String indexName )
-    {
-        final DeleteIndexRequest req = new DeleteIndexRequest( indexName );
+        OpenIndexRequestBuilder openIndexRequestBuilder =
+            new OpenIndexRequestBuilder( this.client.admin().indices(), OpenIndexAction.INSTANCE ).setIndices( indices );
 
         try
         {
-            client.admin().indices().delete( req ).actionGet( DELETE_INDEX_TIMEOUT );
-            LOG.info( "Deleted index {}", indexName );
+            LOG.info( "Opening indices {}", Arrays.toString( indices ) );
+            final OpenIndexResponse response = this.client.admin().indices().open( openIndexRequestBuilder.request() ).actionGet();
+            LOG.info( "Opened indices {} with status {}", Arrays.toString( indices ), response.isAcknowledged() );
         }
         catch ( ElasticsearchException e )
         {
-            LOG.warn( "Failed to delete index {}", indexName );
+            throw new IndexException( "Cannot open indices " + Arrays.toString( indices ), e );
         }
     }
+
 
     @Reference
     public void setClient( final Client client )

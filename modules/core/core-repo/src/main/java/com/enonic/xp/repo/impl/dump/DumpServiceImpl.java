@@ -323,7 +323,7 @@ public class DumpServiceImpl
 
             repositoryEntryService.findRepositoryEntryIds().
                 stream().
-                filter( Predicate.isEqual( SystemConstants.SYSTEM_REPO_ID ).
+                filter( Predicate.<RepositoryId>isEqual( SystemConstants.SYSTEM_REPO_ID ).
                     or( SYSTEM_REPO_IDS::contains ).
                     negate() ).
                 forEach( this::doDeleteRepository );
@@ -356,7 +356,7 @@ public class DumpServiceImpl
             // Load non-system repositories
             dumpRepositories.
                 stream().
-                filter( Predicate.isEqual( SystemConstants.SYSTEM_REPO_ID ).
+                filter( Predicate.<RepositoryId>isEqual( SystemConstants.SYSTEM_REPO_ID ).
                     or( SYSTEM_REPO_IDS::contains ).
                     negate() ).
                 forEach( repositoryId -> {

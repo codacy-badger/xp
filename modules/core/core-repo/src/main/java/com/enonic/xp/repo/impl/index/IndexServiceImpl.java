@@ -1,5 +1,7 @@
 package com.enonic.xp.repo.impl.index;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -87,33 +89,31 @@ public class IndexServiceImpl
     private void updateIndexSettings( final RepositoryId repositoryId, final UpdateIndexSettings updateIndexSettings,
                                       final boolean closeIndex, final UpdateIndexSettingsResult.Builder result )
     {
-        final String searchIndexName = IndexNameResolver.resolveSearchIndexName( repositoryId );
-        final String storageIndexName = IndexNameResolver.resolveStorageIndexName( repositoryId );
-        updateIndexSettings( searchIndexName, updateIndexSettings, result, closeIndex );
-        updateIndexSettings( storageIndexName, updateIndexSettings, result, closeIndex );
+        final List<String> indexNames = IndexNameResolver.resolveIndexNames( repositoryId );
+        updateIndexSettings( updateIndexSettings, result, closeIndex, indexNames.toArray( String[]::new ) );
     }
 
-    private void updateIndexSettings( final String indexName, final UpdateIndexSettings settings,
-                                      final UpdateIndexSettingsResult.Builder result, final boolean closeIndex )
+    private void updateIndexSettings( final UpdateIndexSettings settings, final UpdateIndexSettingsResult.Builder result,
+                                      final boolean closeIndex, final String[] indexNames )
     {
         if ( closeIndex )
         {
-            this.indexServiceInternal.closeIndices( indexName );
+            this.indexServiceInternal.closeIndices( indexNames );
         }
 
         try
         {
-            indexServiceInternal.updateIndex( indexName, settings );
+            indexServiceInternal.updateIndices( settings, indexNames );
         }
         finally
         {
             if ( closeIndex )
             {
-                indexServiceInternal.openIndices( indexName );
+                indexServiceInternal.openIndices( indexNames );
             }
         }
 
-        result.addUpdatedIndex( indexName );
+        Arrays.stream( indexNames ).forEach( result::addUpdatedIndex );
     }
 
     @Override
@@ -131,7 +131,6 @@ public class IndexServiceImpl
     @Override
     public boolean isMaster()
     {
-
         return indexServiceInternal.isMaster();
     }
 

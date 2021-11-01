@@ -67,7 +67,8 @@ public class SnapshotServiceImpl
     private final IndexServiceInternal indexServiceInternal;
 
     @Activate
-    public SnapshotServiceImpl( @Reference final Client client, @Reference final RepoConfiguration configuration, @Reference final RepositoryEntryService repositoryEntryService,
+    public SnapshotServiceImpl( @Reference final Client client, @Reference final RepoConfiguration configuration,
+                                @Reference final RepositoryEntryService repositoryEntryService,
                                 @Reference final EventPublisher eventPublisher, @Reference final IndexServiceInternal indexServiceInternal )
     {
         this.client = client;
@@ -130,10 +131,23 @@ public class SnapshotServiceImpl
             LOG.info( "Restoring repository {} from snapshot", repositoryToRestore );
         }
 
+        final List<String> indicesToClose;
+        final List<String> indicesToRestore;
+        if ( restoreAll )
+        {
+            indicesToRestore = List.of();
+            indicesToClose = IndexNameResolver.resolveIndexNames( repositoriesBeforeRestore );
+        }
+        else
+        {
+            indicesToRestore = IndexNameResolver.resolveIndexNames( repositoryToRestore );
+            indicesToClose = indicesToRestore;
+        }
+
         final RestoreResult result = SnapshotRestoreExecutor.create()
             .snapshotName( snapshotName )
-            .repositoriesToClose( restoreAll ? repositoriesBeforeRestore : RepositoryIds.from( repositoryToRestore ) )
-            .repositoriesToRestore( restoreAll ? RepositoryIds.empty() : RepositoryIds.from( repositoryToRestore ) )
+            .indicesToClose( indicesToClose )
+            .indicesToRestore( indicesToRestore )
             .client( this.client )
             .snapshotRepositoryName( SNAPSHOT_REPOSITORY_NAME )
             .indexServiceInternal( this.indexServiceInternal )
@@ -143,15 +157,23 @@ public class SnapshotServiceImpl
         if ( restoreAll )
         {
             final RepositoryIds repositoriesAfterRestore = repositoryEntryService.findRepositoryEntryIds();
-
             repositoriesBeforeRestore.stream().filter( Predicate.not( repositoriesAfterRestore::contains ) ).forEach( repositoryId -> {
                 LOG.info( "Deleting repository {} indices missing in snapshot", repositoryId );
                 indexServiceInternal.deleteIndices( IndexNameResolver.resolveIndexNames( repositoryId ).toArray( String[]::new ) );
             } );
         }
 
-        LOG.info( "Snapshot Restore completed" );
-        this.eventPublisher.publish( RepositoryEvents.restored() );
+        final boolean ready = indexServiceInternal.waitForYellowStatus();
+
+        if ( ready )
+        {
+            this.eventPublisher.publish( RepositoryEvents.restored() );
+            LOG.info( "Snapshot Restore completed" );
+        }
+        else
+        {
+            LOG.warn( "Snapshot Restore was not fully completed. In order to complete, restart all XP nodes in the cluster manually when Elasticsearch is ready." );
+        }
 
         return result;
     }
