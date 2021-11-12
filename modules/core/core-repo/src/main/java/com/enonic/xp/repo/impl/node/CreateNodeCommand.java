@@ -214,11 +214,7 @@ public final class CreateNodeCommand
 
         NodePath nodePath = NodePath.create( params.getParent(), params.getName() ).build();
 
-        CheckNodeExistsCommand.create( this ).
-            nodePath( nodePath ).
-            throwIfExists().
-            build().
-            execute();
+        CheckNodeExistsCommand.create( this ).nodePath( nodePath ).throwIfExists().refresh( true ).build().execute();
     }
 
     public static class Builder

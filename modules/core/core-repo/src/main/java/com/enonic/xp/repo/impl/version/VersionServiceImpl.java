@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.repo.impl.InternalContext;
@@ -51,19 +50,18 @@ public class VersionServiceImpl
     }
 
     @Override
-    public NodeVersionMetadata getVersion( final NodeId nodeId, final NodeVersionId nodeVersionId, final InternalContext context )
+    public NodeVersionMetadata getVersion( final NodeVersionId nodeVersionId, final InternalContext context )
     {
-        return doGetById( nodeId, nodeVersionId, context );
+        return doGetById( nodeVersionId, context );
     }
 
-    private NodeVersionMetadata doGetById( final NodeId nodeId, final NodeVersionId nodeVersionId, final InternalContext context )
+    private NodeVersionMetadata doGetById( final NodeVersionId nodeVersionId, final InternalContext context )
     {
-        final GetByIdRequest getByIdRequest = GetByIdRequest.create().
-            id( nodeVersionId.toString() ).
-            returnFields( VERSION_RETURN_FIELDS ).
-            storageSettings( createStorageSettings( context ) ).
-            routing( nodeId.toString() ).
-            build();
+        final GetByIdRequest getByIdRequest = GetByIdRequest.create()
+            .id( nodeVersionId.toString() )
+            .returnFields( VERSION_RETURN_FIELDS )
+            .storageSettings( createStorageSettings( context ) )
+            .build();
 
         final GetResult getResult = this.storageDao.getById( getByIdRequest );
 

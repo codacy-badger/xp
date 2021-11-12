@@ -29,13 +29,17 @@ public interface NodeService
 
     Node getById( NodeId id );
 
+    @Deprecated
     Node getByIdAndVersionId( NodeId id, NodeVersionId versionId );
 
     Nodes getByIds( NodeIds ids );
 
     Node getByPath( NodePath path );
 
+    @Deprecated
     Node getByPathAndVersionId( NodePath path, NodeVersionId versionId );
+
+    Node getByVersionId( NodeVersionId versionId );
 
     Nodes getByPaths( NodePaths paths );
 

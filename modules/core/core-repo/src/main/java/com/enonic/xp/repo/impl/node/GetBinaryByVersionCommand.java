@@ -5,7 +5,6 @@ import com.google.common.io.ByteSource;
 
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.Node;
-import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeNotFoundException;
 import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repo.impl.InternalContext;
@@ -15,18 +14,15 @@ public class GetBinaryByVersionCommand
 {
     private final NodeVersionId nodeVersionId;
 
-    private final NodeId nodeId;
-
     private GetBinaryByVersionCommand( final Builder builder )
     {
         super( builder );
         this.nodeVersionId = builder.nodeVersionId;
-        this.nodeId = builder.nodeId;
     }
 
     public ByteSource execute()
     {
-        final Node node = this.nodeStorageService.get( nodeId, nodeVersionId, InternalContext.from( ContextAccessor.current() ) );
+        final Node node = this.nodeStorageService.get( nodeVersionId, InternalContext.from( ContextAccessor.current() ) );
 
         if ( node == null )
         {
@@ -54,9 +50,6 @@ public class GetBinaryByVersionCommand
     {
         private NodeVersionId nodeVersionId;
 
-        private NodeId nodeId;
-
-
         public Builder()
         {
             super();
@@ -68,18 +61,11 @@ public class GetBinaryByVersionCommand
             return this;
         }
 
-        public Builder nodeId( final NodeId nodeId )
-        {
-            this.nodeId = nodeId;
-            return this;
-        }
-
         @Override
         void validate()
         {
             super.validate();
             Preconditions.checkNotNull( nodeVersionId, "nodeVersionId not set" );
-            Preconditions.checkNotNull( nodeId, "nodeId not set" );
         }
 
         public GetBinaryByVersionCommand build()

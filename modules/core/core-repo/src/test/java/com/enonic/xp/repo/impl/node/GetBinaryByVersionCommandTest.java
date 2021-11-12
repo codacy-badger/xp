@@ -39,7 +39,6 @@ public class GetBinaryByVersionCommandTest
             build() );
 
         final ByteSource myImage = GetBinaryByVersionCommand.create().
-            nodeId( node.id() ).
             nodeVersionId( node.getNodeVersionId() ).
             binaryReference( imageRef ).
             indexServiceInternal( this.indexServiceInternal ).

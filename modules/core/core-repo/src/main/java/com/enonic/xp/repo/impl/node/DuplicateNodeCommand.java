@@ -225,20 +225,15 @@ public final class DuplicateNodeCommand
         // Process as file name as it is so for images
         String newNodeName = DuplicateValueResolver.fileName( existingNode.name().toString() );
 
-        boolean resolvedUnique = false;
-
-        while ( !resolvedUnique )
+        while ( true )
         {
             final NodePath checkIfExistsPath = NodePath.create( existingNode.parentPath(), newNodeName ).build();
 
-            final boolean exists = CheckNodeExistsCommand.create( this ).
-                nodePath( checkIfExistsPath ).
-                build().
-                execute();
+            final boolean exists = CheckNodeExistsCommand.create( this ).nodePath( checkIfExistsPath ).refresh( true ).build().execute();
 
             if ( !exists )
             {
-                resolvedUnique = true;
+                break;
             }
             else
             {

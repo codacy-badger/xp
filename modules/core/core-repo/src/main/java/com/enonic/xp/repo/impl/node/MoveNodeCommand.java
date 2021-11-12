@@ -161,6 +161,8 @@ public class MoveNodeCommand
 
     private Node doMoveNode( final NodePath newParentPath, final NodeName newNodeName, final NodeId id )
     {
+        verifyNoExistingAtNewPath( newParentPath, newNodeName );
+
         final Node persistedNode = doGetById( id );
 
         final SearchResult result = this.nodeSearchService.query(
@@ -171,12 +173,8 @@ public class MoveNodeCommand
                                                                                                    InternalContext.from(
                                                                                                        ContextAccessor.current() ) );
 
-        final NodeName nodeName = ( newNodeName != null ) ? newNodeName : persistedNode.name();
-
-        verifyNoExistingAtNewPath( newParentPath, newNodeName );
-
         final Node.Builder nodeToMoveBuilder = Node.create( persistedNode )
-            .name( nodeName )
+            .name( newNodeName )
             .data( processor.process( persistedNode.data() ) )
             .parentPath( newParentPath )
             .indexConfigDocument( persistedNode.getIndexConfigDocument() )

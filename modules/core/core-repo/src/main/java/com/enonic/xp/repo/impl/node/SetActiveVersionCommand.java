@@ -33,7 +33,7 @@ public class SetActiveVersionCommand
     {
         final InternalContext context = InternalContext.from( ContextAccessor.current() );
 
-        final Node node = this.nodeStorageService.get(nodeId, nodeVersionId, context );
+        final Node node = this.nodeStorageService.get( nodeVersionId, context );
 
         if ( node == null )
         {
