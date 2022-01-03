@@ -34,6 +34,9 @@ class NullSessionStoreFactoryActivatorTest
     @Mock
     private ServiceRegistration<SessionCacheFactory> sessionCacheFactoryServiceRegistration;
 
+    @Mock
+    private WebSessionStoreConfigService webSessionstoreConfigService;
+
     @Test
     public void verifyActivateDeactivate()
     {
@@ -42,7 +45,7 @@ class NullSessionStoreFactoryActivatorTest
         when( bundleContext.registerService( same( SessionCacheFactory.class ), any( SessionCacheFactory.class ), isNull() ) ).
             thenReturn( sessionCacheFactoryServiceRegistration );
 
-        final NullSessionStoreFactoryActivator nullSessionDataStoreFactoryActivator = new NullSessionStoreFactoryActivator( bundleContext );
+        final NullSessionStoreFactoryActivator nullSessionDataStoreFactoryActivator = new NullSessionStoreFactoryActivator( bundleContext, webSessionstoreConfigService );
 
         nullSessionDataStoreFactoryActivator.activate();
 
