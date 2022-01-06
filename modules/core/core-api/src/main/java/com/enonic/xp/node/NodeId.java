@@ -32,6 +32,10 @@ public final class NodeId
 
     public static NodeId from( final Object object )
     {
+        if ( object instanceof UUID )
+        {
+            return new NodeId( object.toString() );
+        }
         return new NodeId( Objects.toString( object, null) );
     }
 }
