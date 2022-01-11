@@ -1,8 +1,6 @@
 package com.enonic.xp.node;
 
 
-import java.util.Objects;
-
 import com.enonic.xp.annotation.PublicApi;
 
 @PublicApi
@@ -14,9 +12,9 @@ public final class NodeVersionId
         super();
     }
 
-    private NodeVersionId( final String value )
+    private NodeVersionId( final Object object )
     {
-        super( value );
+        super( object );
     }
 
     @Override
@@ -32,6 +30,6 @@ public final class NodeVersionId
 
     public static NodeVersionId from( final Object object )
     {
-        return new NodeVersionId( Objects.toString( object, null) );
+        return new NodeVersionId( object );
     }
 }

@@ -1,8 +1,6 @@
 package com.enonic.xp.audit;
 
 
-import java.util.Objects;
-
 import com.enonic.xp.annotation.PublicApi;
 
 @PublicApi
@@ -14,9 +12,9 @@ public final class AuditLogId
         super();
     }
 
-    private AuditLogId( final String value )
+    private AuditLogId( final Object object )
     {
-        super( value );
+        super( object );
     }
 
     @Override
@@ -32,6 +30,6 @@ public final class AuditLogId
 
     public static AuditLogId from( final Object object )
     {
-        return new AuditLogId( Objects.toString( object, null) );
+        return new AuditLogId( object );
     }
 }

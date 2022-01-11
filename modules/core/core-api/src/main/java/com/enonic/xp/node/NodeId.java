@@ -1,8 +1,6 @@
 package com.enonic.xp.node;
 
 
-import java.util.Objects;
-
 import com.enonic.xp.annotation.PublicApi;
 
 @PublicApi
@@ -14,7 +12,7 @@ public final class NodeId
         super();
     }
 
-    private NodeId( final String value )
+    private NodeId( final Object value )
     {
         super( value );
     }
@@ -32,10 +30,11 @@ public final class NodeId
 
     public static NodeId from( final Object object )
     {
-        if ( object instanceof UUID )
-        {
-            return new NodeId( object.toString() );
-        }
-        return new NodeId( Objects.toString( object, null) );
+        return new NodeId( object );
+    }
+
+    public static NodeId from( final UUID object )
+    {
+        return new NodeId( object );
     }
 }

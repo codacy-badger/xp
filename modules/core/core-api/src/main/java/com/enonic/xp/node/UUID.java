@@ -16,19 +16,33 @@ public class UUID
 
     public UUID()
     {
-        this( java.util.UUID.randomUUID().toString() );
+        this.value = java.util.UUID.randomUUID().toString();
     }
 
     protected UUID( final String value )
     {
-        this.value = value;
+        this.value = check( value );
     }
 
-    protected static void check( final String value )
+    protected UUID( final Object object )
+    {
+        if ( object instanceof UUID )
+        {
+            this.value = ( (UUID) object ).value;
+        }
+        else
+        {
+            Preconditions.checkNotNull( object, "object cannot be null" );
+            this.value = check( object.toString() );
+        }
+    }
+
+    private static String check( String value )
     {
         Preconditions.checkNotNull( value, "UUID cannot be null" );
         Preconditions.checkArgument( !value.isBlank(), "UUID cannot be blank" );
         Preconditions.checkArgument( VALID_NODE_ID_PATTERN.matcher( value ).matches(), "UUID format incorrect: " + value );
+        return value;
     }
 
     @Override
@@ -67,7 +81,6 @@ public class UUID
     @Deprecated
     public static UUID from( final Object object )
     {
-        Preconditions.checkNotNull( object, "object cannot be null" );
-        return new UUID( object.toString() );
+        return new UUID( object );
     }
 }

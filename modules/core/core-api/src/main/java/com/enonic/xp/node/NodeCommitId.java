@@ -1,8 +1,6 @@
 package com.enonic.xp.node;
 
 
-import java.util.Objects;
-
 import com.enonic.xp.annotation.PublicApi;
 
 @PublicApi
@@ -14,9 +12,9 @@ public final class NodeCommitId
         super();
     }
 
-    private NodeCommitId( final String value )
+    private NodeCommitId( final Object object )
     {
-        super( value );
+        super( object );
     }
 
     @Override
@@ -32,6 +30,6 @@ public final class NodeCommitId
 
     public static NodeCommitId from( final Object object )
     {
-        return new NodeCommitId( Objects.toString(object, null) );
+        return new NodeCommitId( object );
     }
 }
