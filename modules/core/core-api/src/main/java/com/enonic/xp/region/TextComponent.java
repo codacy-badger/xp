@@ -12,10 +12,13 @@ public class TextComponent
 
     private final String text;
 
+    private final String markup;
+
     protected TextComponent( final Builder builder )
     {
         super( builder );
         this.text = builder.text != null ? builder.text : "";
+        this.markup = builder.markup;
     }
 
     public static Builder create()
@@ -52,6 +55,11 @@ public class TextComponent
         return text;
     }
 
+    public String getMarkup()
+    {
+        return markup;
+    }
+
     @Override
     public boolean equals( final Object o )
     {
@@ -85,6 +93,8 @@ public class TextComponent
     {
         private String text;
 
+        private String markup;
+
         Builder()
         {
             // Default
@@ -112,6 +122,12 @@ public class TextComponent
         public Builder text( String value )
         {
             this.text = value;
+            return this;
+        }
+
+        public Builder markup( final String value )
+        {
+            this.markup = value;
             return this;
         }
 

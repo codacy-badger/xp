@@ -112,6 +112,10 @@ final class CreateFragmentCommand
     private String doGenerateDisplayName( final TextComponent textComponent )
     {
         final String html = textComponent.getText();
+        if ( html.startsWith( "[" ) ) // TODO need proper way to identify AST
+        {
+            return "Text";
+        }
         String text = HtmlHelper.htmlToText( html );
         return text.isEmpty() ? textComponent.getName().toString() : abbreviate( text, 40 );
     }

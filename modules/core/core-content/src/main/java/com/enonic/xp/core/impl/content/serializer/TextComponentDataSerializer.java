@@ -19,6 +19,10 @@ final class TextComponentDataSerializer
         {
             specBlock.addString( VALUE, component.getText() );
         }
+        if ( component.getMarkup() != null )
+        {
+            specBlock.addString( "markup", component.getMarkup() );
+        }
     }
 
     @Override
@@ -28,9 +32,19 @@ final class TextComponentDataSerializer
 
         final PropertySet specialBlockSet = data.getSet( TextComponentType.INSTANCE.toString() );
 
-        if ( specialBlockSet != null && specialBlockSet.isNotNull( VALUE ) )
+        if ( specialBlockSet != null )
         {
-            component.text( specialBlockSet.getString( VALUE ) );
+            if ( specialBlockSet.isNotNull( VALUE ) )
+            {
+
+                component.text( specialBlockSet.getString( VALUE ) );
+            }
+
+            if ( specialBlockSet.isNotNull( "markup" ) )
+            {
+
+                component.markup( specialBlockSet.getString( "markup" ) );
+            }
         }
 
         return component.build();

@@ -281,6 +281,11 @@ public class HtmlAreaContentProcessor
             return;
         }
 
+        if ( value.startsWith( "[" ) ) // TODO need proper way to identify AST
+        {
+            return; // TODO Support content references
+        }
+
         final Matcher contentMatcher = HtmlLinkProcessor.CONTENT_PATTERN.matcher( value );
 
         while ( contentMatcher.find() )
