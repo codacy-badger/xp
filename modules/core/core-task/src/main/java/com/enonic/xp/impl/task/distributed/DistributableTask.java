@@ -3,6 +3,9 @@ package com.enonic.xp.impl.task.distributed;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.core.internal.osgi.OsgiSupport;
 import com.enonic.xp.data.PropertyTree;
@@ -15,6 +18,8 @@ import com.enonic.xp.task.TaskId;
 public final class DistributableTask
     implements DescribedTask, Serializable
 {
+    private static final Logger LOG = LoggerFactory.getLogger( DistributableTask.class );
+
     private static final long serialVersionUID = 0;
 
     private final TaskId taskId;
@@ -80,7 +85,9 @@ public final class DistributableTask
         if ( namedTask == null )
         {
             final DescriptorKey descriptorKey = DescriptorKey.from( name );
+            LOG.info( "initNamedTask {}", name );
             namedTask = OsgiSupport.withService( NamedTaskFactory.class, ntsf -> ntsf.create( descriptorKey, data ) );
+            LOG.info( "initNamedTask done {}", name );
         }
     }
 }

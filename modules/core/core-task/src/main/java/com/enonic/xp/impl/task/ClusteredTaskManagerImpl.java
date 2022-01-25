@@ -15,6 +15,8 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
@@ -38,6 +40,8 @@ import com.enonic.xp.task.TaskInfo;
 public final class ClusteredTaskManagerImpl
     implements TaskManager
 {
+    private static final Logger LOG = LoggerFactory.getLogger( ClusteredTaskManagerImpl.class );
+
     public static final String ACTION = "xp/task";
 
     private static final ApplicationKey SYSTEM_APPLICATION_KEY = ApplicationKey.from( "com.enonic.xp.app.system" );
@@ -129,8 +133,12 @@ public final class ClusteredTaskManagerImpl
     {
         try
         {
-            executorService.submit( new OffloadedTaskCallable( task ), new TaskMemberSelector( task ) ).
-                get( outboundTimeoutNs, TimeUnit.NANOSECONDS );
+            final Future<Void> future = executorService.submit( new OffloadedTaskCallable( task ), new TaskMemberSelector( task ) );
+            LOG.info( "Future submitted for task {} {}", task.getName(), task.getTaskId()  );
+
+            LOG.info( "Getting conformation of task being submitted {} {}. Timeout is {}", task.getName(), task.getTaskId(), outboundTimeoutNs );
+                future.get( outboundTimeoutNs, TimeUnit.NANOSECONDS );
+            LOG.info( "Confirmed task being submitted. {} {}", task.getName(), task.getTaskId() );
         }
         catch ( TimeoutException e )
         {

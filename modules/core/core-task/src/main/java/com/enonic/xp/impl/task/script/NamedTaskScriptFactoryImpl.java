@@ -3,6 +3,8 @@ package com.enonic.xp.impl.task.script;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.form.PropertyTreeMarshallerService;
@@ -19,6 +21,8 @@ import com.enonic.xp.task.TaskNotFoundException;
 public class NamedTaskScriptFactoryImpl
     implements NamedTaskFactory
 {
+    private static final Logger LOG = LoggerFactory.getLogger( NamedTaskScriptFactoryImpl.class );
+
     private static final String TASKS_PATH_PREFIX = "tasks/";
 
     private final PortalScriptService scriptService;
@@ -57,7 +61,9 @@ public class NamedTaskScriptFactoryImpl
         final ScriptExports exports;
         try
         {
+            LOG.info( "Getting exports for namedTask {}", key);
             exports = this.scriptService.execute( scriptResourceKey );
+            LOG.info( "Got exports for namedTask {}", key);
         }
         catch ( ResourceNotFoundException e )
         {

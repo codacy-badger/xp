@@ -14,6 +14,8 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.enonic.xp.core.internal.concurrent.RecurringJob;
 import com.enonic.xp.event.EventPublisher;
@@ -33,6 +35,8 @@ import com.enonic.xp.trace.Tracer;
 public final class LocalTaskManagerImpl
     implements TaskManager
 {
+    private static final Logger LOG = LoggerFactory.getLogger( LocalTaskManagerImpl.class );
+
     static final long KEEP_COMPLETED_MAX_TIME_SEC = 60;
 
     private final ConcurrentMap<TaskId, TaskInfoHolder> tasks = new ConcurrentHashMap<>();
@@ -46,6 +50,8 @@ public final class LocalTaskManagerImpl
     private Clock clock;
 
     private RecurringJob recurringJob;
+
+    private Instant start = Instant.now();
 
     @Activate
     public LocalTaskManagerImpl( @Reference(service = TaskManagerExecutor.class) final Executor executor,
@@ -168,7 +174,9 @@ public final class LocalTaskManagerImpl
 
     private void doSubmitTask( final DescribedTask runnableTask )
     {
+        LOG.info( "doSubmitTask  {} {}", runnableTask.getName(), runnableTask.getTaskId() );
         executor.execute( prepareRunnable( runnableTask ) );
+        LOG.info( "doSubmitTask done {} {}", runnableTask.getName(), runnableTask.getTaskId() );
     }
 
     private Runnable prepareRunnable( final DescribedTask runnableTask )
@@ -176,23 +184,33 @@ public final class LocalTaskManagerImpl
         final TaskId id = runnableTask.getTaskId();
 
         final User user = Objects.requireNonNullElse( runnableTask.getTaskContext().getAuthInfo().getUser(), User.ANONYMOUS );
+
+        LOG.info( "Line 1 {} {}", runnableTask.getName(), runnableTask.getTaskId() );
+
         final TaskInfo info = TaskInfo.create().
             id( id ).
             description( runnableTask.getDescription() ).
             name( runnableTask.getName() ).
             state( TaskState.WAITING ).
-            startTime( Instant.now( clock ) ).
+            startTime( start ).
             application( runnableTask.getApplicationKey() ).
             user( user.getKey() ).
             build();
+
+        LOG.info( "Line 2 {} {}", runnableTask.getName(), runnableTask.getTaskId() );
 
         final TaskInfoHolder taskInfoHolder = TaskInfoHolder.create().
             taskInfo( info ).
             build();
 
+        LOG.info( "Line 3 {} {}", runnableTask.getName(), runnableTask.getTaskId() );
+
         tasks.put( id, taskInfoHolder );
 
+        LOG.info( "publishing submitted event {} {}", runnableTask.getName(), runnableTask.getTaskId() );
         eventPublisher.publish( TaskEvents.submitted( info ) );
+        LOG.info( "publishing submitted event done {} {}", runnableTask.getName(), runnableTask.getTaskId() );
+
         return new TaskRunnable( runnableTask, new ProgressReporterAdapter( id ) );
     }
 
