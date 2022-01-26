@@ -1,13 +1,18 @@
 package com.enonic.xp.admin.impl.portal;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.inputtype.InputTypeName;
 import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.portal.PortalRequest;
 import com.enonic.xp.portal.PortalResponse;
-import com.enonic.xp.portal.controller.ControllerScriptFactory;
+import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.trace.Trace;
 import com.enonic.xp.trace.Tracer;
 import com.enonic.xp.web.WebRequest;
@@ -20,11 +25,16 @@ import com.enonic.xp.web.handler.WebHandlerChain;
 public final class InputTypeHandler
     extends BaseWebHandler
 {
-//    private AdminToolDescriptorService adminToolDescriptorService;
-
     private InputTypeResolver inputTypeResolver;
 
-    private ControllerScriptFactory controllerScriptFactory;
+    public static final String INPUT_TYPE_START = "/admin/input-type";
+
+    public static final String INPUT_TYPE_PREFIX = INPUT_TYPE_START + "/";
+
+    public static final Pattern PATTERN = Pattern.compile( "^([^/^_]+)/([^/^_]+)/([^/^_]+)" );
+
+    private ResourceService resourceService;
+
 
     public InputTypeHandler()
     {
@@ -34,7 +44,7 @@ public final class InputTypeHandler
     @Override
     protected boolean canHandle( final WebRequest webRequest )
     {
-        return webRequest.getRawPath().startsWith( InputTypePortalHandler.INPUT_TYPE_START );
+        return webRequest.getRawPath().startsWith( INPUT_TYPE_START );
     }
 
     @Override
@@ -46,10 +56,7 @@ public final class InputTypeHandler
         PortalRequest portalRequest = (PortalRequest) webRequest;
         portalRequest.setContextPath( portalRequest.getBaseUri() );
 
-        final InputTypeHandlerWorker worker = new InputTypeHandlerWorker( portalRequest );
-        worker.controllerScriptFactory = this.controllerScriptFactory;
-        worker.inputTypeResolver = this.inputTypeResolver;
-        worker.inputTypeName = InputTypePortalHandler.getInputTypeName( webRequest );
+        final InputTypeHandlerWorker worker = buildWorker( portalRequest );
 
         final Trace trace = Tracer.newTrace( "portalRequest" );
         if ( trace == null )
@@ -78,6 +85,34 @@ public final class InputTypeHandler
         } );
     }
 
+    public InputTypeHandlerWorker buildWorker( final PortalRequest portalRequest )
+    {
+        final String path = portalRequest.getRawPath();
+
+        if ( path.startsWith( INPUT_TYPE_PREFIX ) )
+        {
+            final String subPath = path.substring( INPUT_TYPE_PREFIX.length() );
+            final Matcher matcher = PATTERN.matcher( subPath );
+
+            if ( matcher.find() )
+            {
+                final ApplicationKey applicationKey = ApplicationKey.from( matcher.group( 1 ) );
+                final String inputTypeName = matcher.group( 2 );
+
+                final InputTypeHandlerWorker worker = new InputTypeHandlerWorker( portalRequest );
+
+                worker.resourceName = matcher.group( 3 );
+                worker.inputTypeName = InputTypeName.from( applicationKey, inputTypeName );
+
+                worker.inputTypeResolver = this.inputTypeResolver;
+                worker.resourceService = this.resourceService;
+
+                return worker;
+            }
+        }
+        throw new IllegalArgumentException( "inputTypeName must be set" );
+    }
+
 //    @Reference
 //    public void setAdminToolDescriptorService( final AdminToolDescriptorService adminToolDescriptorService )
 //    {
@@ -85,14 +120,14 @@ public final class InputTypeHandler
 //    }
 
     @Reference
-    public void setControllerScriptFactory( final ControllerScriptFactory controllerScriptFactory )
-    {
-        this.controllerScriptFactory = controllerScriptFactory;
-    }
-
-    @Reference
     public void setInputTypeResolver( final InputTypeResolver inputTypeResolver )
     {
         this.inputTypeResolver = inputTypeResolver;
+    }
+
+    @Reference
+    public void setResourceService( final ResourceService resourceService )
+    {
+        this.resourceService = resourceService;
     }
 }
