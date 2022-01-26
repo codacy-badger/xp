@@ -23,6 +23,7 @@ import com.enonic.xp.data.PropertySet;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.event.EventPublisher;
 import com.enonic.xp.index.ChildOrder;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.media.MediaInfo;
 import com.enonic.xp.node.CreateNodeParams;
 import com.enonic.xp.node.Node;
@@ -72,6 +73,8 @@ public class CreateContentCommandTest
 
     private ContentDataSerializer contentDataSerializer;
 
+    private InputTypeResolver inputTypeResolver;
+
     @BeforeEach
     public void setUp()
         throws Exception
@@ -84,6 +87,7 @@ public class CreateContentCommandTest
         this.contentTypeService = Mockito.mock( ContentTypeService.class );
         this.partDescriptorService = Mockito.mock( PartDescriptorService.class );
         this.layoutDescriptorService = Mockito.mock( LayoutDescriptorService.class );
+        this.inputTypeResolver = Mockito.mock( InputTypeResolver.class );
 
         this.contentDataSerializer = ContentDataSerializer.create()
             .layoutDescriptorService( layoutDescriptorService )
@@ -601,6 +605,7 @@ public class CreateContentCommandTest
             .siteService( this.siteService )
             .pageDescriptorService( this.pageDescriptorService )
             .contentDataSerializer( contentDataSerializer )
+            .inputTypeResolver( inputTypeResolver )
             .formDefaultValuesProcessor( ( form, data ) -> {
             } )
             .build();

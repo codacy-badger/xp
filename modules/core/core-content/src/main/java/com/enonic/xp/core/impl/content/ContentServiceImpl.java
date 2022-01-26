@@ -102,6 +102,7 @@ import com.enonic.xp.core.impl.content.serializer.ContentDataSerializer;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.event.EventPublisher;
 import com.enonic.xp.form.FormDefaultValuesProcessor;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.media.MediaInfoService;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeAccessException;
@@ -171,6 +172,8 @@ public class ContentServiceImpl
 
     private final ContentDataSerializer contentDataSerializer;
 
+    private final InputTypeResolver inputTypeResolver;
+
     private ContentAuditLogSupport contentAuditLogSupport;
 
     private volatile ContentConfig config;
@@ -178,18 +181,21 @@ public class ContentServiceImpl
     @Activate
     public ContentServiceImpl( @Reference final NodeService nodeService, @Reference final PageDescriptorService pageDescriptorService,
                                @Reference final PartDescriptorService partDescriptorService,
-                               @Reference final LayoutDescriptorService layoutDescriptorService )
+                               @Reference final LayoutDescriptorService layoutDescriptorService,
+                               @Reference final InputTypeResolver inputTypeResolver )
     {
         this.nodeService = nodeService;
         this.pageDescriptorService = pageDescriptorService;
         this.partDescriptorService = partDescriptorService;
         this.layoutDescriptorService = layoutDescriptorService;
+        this.inputTypeResolver = inputTypeResolver;
 
         this.contentDataSerializer = ContentDataSerializer.create().
             layoutDescriptorService( layoutDescriptorService ).
             pageDescriptorService( pageDescriptorService ).
             partDescriptorService( partDescriptorService ).
             build();
+
 
         this.translator = new ContentNodeTranslator( nodeService, contentDataSerializer );
     }
@@ -222,18 +228,18 @@ public class ContentServiceImpl
         final Site site = (Site) CreateContentCommand.create().
             nodeService( this.nodeService ).
             contentTypeService( this.contentTypeService ).
-            translator( this.translator ).
-            eventPublisher( this.eventPublisher ).
-            siteService( this.siteService ).
-            xDataService( this.xDataService ).
-            contentProcessors( this.contentProcessors ).
-            contentValidators( this.contentValidators ).
-            formDefaultValuesProcessor( this.formDefaultValuesProcessor ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
+            translator( this.translator ).eventPublisher( this.eventPublisher )
+            .siteService( this.siteService )
+            .xDataService( this.xDataService )
+            .contentProcessors( this.contentProcessors )
+            .contentValidators( this.contentValidators )
+            .formDefaultValuesProcessor( this.formDefaultValuesProcessor )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
             params( createContentParams ).
             build().
             execute();
@@ -261,18 +267,18 @@ public class ContentServiceImpl
         final Content content = CreateContentCommand.create().
             nodeService( this.nodeService ).
             contentTypeService( this.contentTypeService ).
-            translator( this.translator ).
-            eventPublisher( this.eventPublisher ).
-            siteService( this.siteService ).
-            xDataService( this.xDataService ).
-            contentProcessors( this.contentProcessors ).
-            contentValidators( this.contentValidators ).
-            formDefaultValuesProcessor( this.formDefaultValuesProcessor ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
+            translator( this.translator ).eventPublisher( this.eventPublisher )
+            .siteService( this.siteService )
+            .xDataService( this.xDataService )
+            .contentProcessors( this.contentProcessors )
+            .contentValidators( this.contentValidators )
+            .formDefaultValuesProcessor( this.formDefaultValuesProcessor )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
             params( params ).
             build().
             execute();
@@ -306,18 +312,18 @@ public class ContentServiceImpl
             nodeService( this.nodeService ).
             contentTypeService( this.contentTypeService ).
             translator( this.translator ).
-            eventPublisher( this.eventPublisher ).
-            mediaInfoService( this.mediaInfoService ).
-            siteService( this.siteService ).
-            xDataService( this.xDataService ).
-            contentProcessors( this.contentProcessors ).
-            contentValidators( this.contentValidators ).
-            formDefaultValuesProcessor( this.formDefaultValuesProcessor ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
+            eventPublisher( this.eventPublisher ).mediaInfoService( this.mediaInfoService )
+            .siteService( this.siteService )
+            .xDataService( this.xDataService )
+            .contentProcessors( this.contentProcessors )
+            .contentValidators( this.contentValidators )
+            .formDefaultValuesProcessor( this.formDefaultValuesProcessor )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
             build().
             execute();
 
@@ -331,18 +337,18 @@ public class ContentServiceImpl
     {
         final Content content = UpdateContentCommand.create( params ).
             nodeService( this.nodeService ).
-            contentTypeService( this.contentTypeService ).
-            translator( this.translator ).
-            eventPublisher( this.eventPublisher ).
-            siteService( this.siteService ).
-            xDataService( this.xDataService ).
-            contentProcessors( this.contentProcessors ).
-            contentValidators( this.contentValidators ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
+            contentTypeService( this.contentTypeService ).translator( this.translator )
+            .eventPublisher( this.eventPublisher )
+            .siteService( this.siteService )
+            .xDataService( this.xDataService )
+            .contentProcessors( this.contentProcessors )
+            .contentValidators( this.contentValidators )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
             build().
             execute();
 
@@ -357,18 +363,18 @@ public class ContentServiceImpl
         final Content content = UpdateMediaCommand.create( params ).
             nodeService( this.nodeService ).
             contentTypeService( this.contentTypeService ).
-            translator( this.translator ).
-            eventPublisher( this.eventPublisher ).
-            mediaInfoService( this.mediaInfoService ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            siteService( this.siteService ).
-            xDataService( this.xDataService ).
-            contentProcessors( this.contentProcessors ).
-            contentValidators( this.contentValidators ).
-            contentDataSerializer( this.contentDataSerializer ).
-            allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
+            translator( this.translator ).eventPublisher( this.eventPublisher )
+            .mediaInfoService( this.mediaInfoService )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .siteService( this.siteService )
+            .xDataService( this.xDataService )
+            .contentProcessors( this.contentProcessors )
+            .contentValidators( this.contentValidators )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .allowUnsafeAttachmentNames( config.attachments_allowUnsafeNames() ).
             build().
             execute();
 
@@ -858,18 +864,18 @@ public class ContentServiceImpl
     {
         final Content content = RenameContentCommand.create( params ).
             nodeService( this.nodeService ).
-            xDataService( this.xDataService ).
-            siteService( this.siteService ).
-            contentTypeService( this.contentTypeService ).
-            translator( this.translator ).
-            eventPublisher( this.eventPublisher ).
-            contentProcessors( this.contentProcessors ).
-            contentValidators( this.contentValidators ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            build().
+            xDataService( this.xDataService ).siteService( this.siteService )
+            .contentTypeService( this.contentTypeService )
+            .translator( this.translator )
+            .eventPublisher( this.eventPublisher )
+            .contentProcessors( this.contentProcessors )
+            .contentValidators( this.contentValidators )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .build().
             execute();
 
         contentAuditLogSupport.rename( params, content );
@@ -1241,17 +1247,18 @@ public class ContentServiceImpl
     @Override
     public Content reprocess( final ContentId contentId )
     {
-        final Content content = ReprocessContentCommand.create( ReprocessContentParams.create().contentId( contentId ).build() ).
-            nodeService( this.nodeService ).
-            contentTypeService( this.contentTypeService ).
-            translator( this.translator ).
-            eventPublisher( this.eventPublisher ).
-            mediaInfoService( this.mediaInfoService ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            siteService( this.siteService ).
+        final Content content = ReprocessContentCommand.create( ReprocessContentParams.create().contentId( contentId ).build() )
+            .nodeService( this.nodeService )
+            .contentTypeService( this.contentTypeService )
+            .translator( this.translator )
+            .eventPublisher( this.eventPublisher )
+            .mediaInfoService( this.mediaInfoService )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .siteService( this.siteService ).
             xDataService( this.xDataService ).
             contentProcessors( this.contentProcessors ).
             contentValidators( this.contentValidators ).

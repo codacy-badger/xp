@@ -15,13 +15,13 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 final class LongType
     extends InputTypeBase
 {
-    public static final LongType INSTANCE = new LongType();
+    public static final LongType INSTANCE = new LongType( create().name( InputTypeName.LONG ) );
 
     private static final Logger LOG = LoggerFactory.getLogger( LongType.class );
 
-    private LongType()
+    public LongType( final Builder builder )
     {
-        super( InputTypeName.LONG );
+        super( builder );
     }
 
     @Override
@@ -84,6 +84,22 @@ final class LongType
         catch ( ConvertException e )
         {
             LOG.warn( "Cannot convert 'max' config to Long", e );
+        }
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public LongType build()
+        {
+            return new LongType( this );
         }
     }
 }

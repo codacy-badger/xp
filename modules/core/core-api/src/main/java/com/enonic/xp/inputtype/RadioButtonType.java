@@ -11,11 +11,11 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 final class RadioButtonType
     extends InputTypeBase
 {
-    public static final RadioButtonType INSTANCE = new RadioButtonType();
+    public static final RadioButtonType INSTANCE = new RadioButtonType( create().name( InputTypeName.RADIO_BUTTON ) );
 
-    private RadioButtonType()
+    private RadioButtonType( final Builder builder )
     {
-        super( InputTypeName.RADIO_BUTTON );
+        super( builder );
     }
 
     @Override
@@ -43,5 +43,21 @@ final class RadioButtonType
         final String valueAsString = property.getString();
         final boolean flag = ( valueAsString == null ) || config.hasAttributeValue( "option", "value", valueAsString );
         validateValue( property, flag, "Value is not a valid option" );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public RadioButtonType build()
+        {
+            return new RadioButtonType( this );
+        }
     }
 }

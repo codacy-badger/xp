@@ -13,11 +13,11 @@ import com.enonic.xp.form.Input;
 final class DateType
     extends InputTypeBase
 {
-    public static final DateType INSTANCE = new DateType();
+    public static final DateType INSTANCE = new DateType( create().name( InputTypeName.DATE ) );
 
-    private DateType()
+    public DateType( final Builder builder )
     {
-        super( InputTypeName.DATE );
+        super( builder );
     }
 
     @Override
@@ -61,5 +61,21 @@ final class DateType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.LOCAL_DATE );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public DateType build()
+        {
+            return new DateType( this );
+        }
     }
 }

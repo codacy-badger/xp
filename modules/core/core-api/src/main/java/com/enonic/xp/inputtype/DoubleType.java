@@ -15,13 +15,13 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 final class DoubleType
     extends InputTypeBase
 {
-    public static final DoubleType INSTANCE = new DoubleType();
+    public static final DoubleType INSTANCE = new DoubleType( create().name( InputTypeName.DOUBLE ) );
 
     private static final Logger LOG = LoggerFactory.getLogger( DoubleType.class );
 
-    private DoubleType()
+    public DoubleType( final Builder builder )
     {
-        super( InputTypeName.DOUBLE );
+        super( builder );
     }
 
     @Override
@@ -82,7 +82,23 @@ final class DoubleType
         }
         catch ( ConvertException e )
         {
-            LOG.warn("Cannot convert 'max' config to Double", e );
+            LOG.warn( "Cannot convert 'max' config to Double", e );
+        }
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public DoubleType build()
+        {
+            return new DoubleType( this );
         }
     }
 }

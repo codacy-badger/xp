@@ -14,6 +14,7 @@ import org.mockito.quality.Strictness;
 
 import com.enonic.xp.core.impl.PropertyTreeMarshallerServiceFactory;
 import com.enonic.xp.form.PropertyTreeMarshallerService;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.scheduler.CalendarService;
 import com.enonic.xp.scheduler.CreateScheduledJobParams;
 import com.enonic.xp.scheduler.CronCalendar;
@@ -166,7 +167,8 @@ public abstract class BaseScheduledJobHandlerTest
 
         this.schedulerService = Mockito.mock( SchedulerService.class );
         this.calendarService = Mockito.mock( CalendarService.class );
-        this.propertyTreeMarshallerService = PropertyTreeMarshallerServiceFactory.newInstance( Mockito.mock( MixinService.class ) );
+        this.propertyTreeMarshallerService =
+            PropertyTreeMarshallerServiceFactory.newInstance( Mockito.mock( MixinService.class ), Mockito.mock( InputTypeResolver.class ) );
 
         addService( CalendarService.class, this.calendarService );
         addService( SchedulerService.class, this.schedulerService );

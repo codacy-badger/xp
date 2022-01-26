@@ -8,6 +8,7 @@ import com.enonic.xp.content.Content;
 import com.enonic.xp.content.UpdateContentParams;
 import com.enonic.xp.content.UpdateMediaParams;
 import com.enonic.xp.core.impl.content.serializer.ContentDataSerializer;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.media.MediaInfo;
 import com.enonic.xp.media.MediaInfoService;
 import com.enonic.xp.page.PageDescriptorService;
@@ -31,6 +32,8 @@ final class UpdateMediaCommand
 
     private final ContentDataSerializer contentDataSerializer;
 
+    private final InputTypeResolver inputTypeResolver;
+
     private UpdateMediaCommand( final Builder builder )
     {
         super( builder );
@@ -40,6 +43,7 @@ final class UpdateMediaCommand
         this.partDescriptorService = builder.partDescriptorService;
         this.layoutDescriptorService = builder.layoutDescriptorService;
         this.contentDataSerializer = builder.contentDataSerializer;
+        this.inputTypeResolver = builder.inputTypeResolver;
     }
 
     public static Builder create( final UpdateMediaParams params )
@@ -104,17 +108,18 @@ final class UpdateMediaCommand
             createAttachments( CreateAttachments.from( mediaAttachment ) ).
             editor( editable -> mediaFormBuilder.build( editable.data ) );
 
-        return UpdateContentCommand.create( this ).
-            params( updateParams ).
-            mediaInfo( mediaInfo ).
-            contentTypeService( this.contentTypeService ).
-            siteService( this.siteService ).
-            xDataService( this.xDataService ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            build().
+        return UpdateContentCommand.create( this )
+            .params( updateParams )
+            .mediaInfo( mediaInfo )
+            .contentTypeService( this.contentTypeService )
+            .siteService( this.siteService )
+            .xDataService( this.xDataService )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .build().
             execute();
     }
 
@@ -132,6 +137,8 @@ final class UpdateMediaCommand
         private LayoutDescriptorService layoutDescriptorService;
 
         private ContentDataSerializer contentDataSerializer;
+
+        private InputTypeResolver inputTypeResolver;
 
         Builder( final UpdateMediaParams params )
         {
@@ -171,6 +178,12 @@ final class UpdateMediaCommand
         public Builder contentDataSerializer( final ContentDataSerializer value )
         {
             this.contentDataSerializer = value;
+            return this;
+        }
+
+        public Builder inputTypeResolver( final InputTypeResolver value )
+        {
+            this.inputTypeResolver = value;
             return this;
         }
 

@@ -2,7 +2,9 @@ package com.enonic.xp.core.impl.form;
 
 import java.util.stream.StreamSupport;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +22,7 @@ import com.enonic.xp.form.FormItems;
 import com.enonic.xp.form.FormOptionSetOption;
 import com.enonic.xp.form.Input;
 import com.enonic.xp.form.Occurrences;
-import com.enonic.xp.inputtype.InputTypes;
+import com.enonic.xp.inputtype.InputTypeResolver;
 
 import static com.enonic.xp.form.FormItemType.FORM_ITEM_SET;
 import static com.enonic.xp.form.FormItemType.FORM_OPTION_SET;
@@ -33,6 +35,14 @@ public final class FormDefaultValuesProcessorImpl
     implements FormDefaultValuesProcessor
 {
     private static final Logger LOG = LoggerFactory.getLogger( FormDefaultValuesProcessorImpl.class );
+
+    private final InputTypeResolver inputTypeResolver;
+
+    @Activate
+    public FormDefaultValuesProcessorImpl( @Reference final InputTypeResolver inputTypeResolver )
+    {
+        this.inputTypeResolver = inputTypeResolver;
+    }
 
     @Override
     public void setDefaultValues( final Form form, final PropertyTree data )
@@ -50,8 +60,7 @@ public final class FormDefaultValuesProcessorImpl
                 {
                     try
                     {
-                        final Value defaultValue = InputTypes.BUILTIN.resolve( input.getInputType() ).
-                            createDefaultValue( input );
+                        final Value defaultValue = inputTypeResolver.resolve( input.getInputType() ).createDefaultValue( input );
 
                         final PropertyPath propertyPath = PropertyPath.from( input.getName() );
 

@@ -7,11 +7,11 @@ import com.enonic.xp.data.ValueFactory;
 final class SiteConfiguratorType
     extends InputTypeBase
 {
-    public static final SiteConfiguratorType INSTANCE = new SiteConfiguratorType();
+    public static final SiteConfiguratorType INSTANCE = new SiteConfiguratorType( create().name( InputTypeName.SITE_CONFIGURATOR ) );
 
-    private SiteConfiguratorType()
+    private SiteConfiguratorType( final Builder builder )
     {
-        super( InputTypeName.SITE_CONFIGURATOR );
+        super( builder );
     }
 
     @Override
@@ -24,4 +24,21 @@ final class SiteConfiguratorType
     public void validate( final Property property, final InputTypeConfig config )
     {
     }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public SiteConfiguratorType build()
+        {
+            return new SiteConfiguratorType( this );
+        }
+    }
+
 }

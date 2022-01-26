@@ -16,7 +16,6 @@ import com.enonic.xp.form.FormOptionSet;
 import com.enonic.xp.form.Input;
 import com.enonic.xp.inputtype.InputType;
 import com.enonic.xp.inputtype.InputTypeResolver;
-import com.enonic.xp.inputtype.InputTypes;
 
 public final class FormJsonToPropertyTreeTranslator
 {
@@ -30,12 +29,12 @@ public final class FormJsonToPropertyTreeTranslator
 
     private static final String OPTION_SET_SELECTION_ARRAY_NAME = "_selected";
 
-    public FormJsonToPropertyTreeTranslator( final Form form, final boolean strict )
+    public FormJsonToPropertyTreeTranslator( final Form form, final boolean strict, final InputTypeResolver inputTypeResolver )
     {
         this.form = form != null ? form : Form.create().build();
         this.strictMode = strict;
         this.propertyTree = new PropertyTree();
-        this.inputTypeResolver = InputTypes.BUILTIN;
+        this.inputTypeResolver = inputTypeResolver;
     }
 
     public PropertyTree translate( final JsonNode json )

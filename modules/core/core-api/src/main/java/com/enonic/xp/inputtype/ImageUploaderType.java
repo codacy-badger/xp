@@ -9,11 +9,11 @@ import com.enonic.xp.data.ValueTypes;
 final class ImageUploaderType
     extends InputTypeBase
 {
-    public static final ImageUploaderType INSTANCE = new ImageUploaderType();
+    public static final ImageUploaderType INSTANCE = new ImageUploaderType( create().name( InputTypeName.IMAGE_UPLOADER ) );
 
-    private ImageUploaderType()
+    public ImageUploaderType( final Builder builder )
     {
-        super( InputTypeName.IMAGE_UPLOADER );
+        super( builder );
     }
 
     @Override
@@ -38,6 +38,22 @@ final class ImageUploaderType
         if ( isX || isY )
         {
             validateType( property, ValueTypes.DOUBLE );
+        }
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public ImageUploaderType build()
+        {
+            return new ImageUploaderType( this );
         }
     }
 }

@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.enonic.xp.form.Form;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.lib.content.mapper.ContentTypeMapper;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
@@ -22,6 +23,8 @@ public final class ContentTypeHandler
 
     private Supplier<MixinService> mixinService;
 
+    private Supplier<InputTypeResolver> inputTypeResolver;
+
     private String name;
 
     public ContentTypeMapper getContentType()
@@ -32,14 +35,17 @@ public final class ContentTypeHandler
         }
         final GetContentTypeParams params = GetContentTypeParams.from( ContentTypeName.from( name ) );
         final ContentType ctype = contentTypeService.get().getByName( params );
-        return ctype == null ? null : new ContentTypeMapper( inlineMixins( ctype ) );
+        return ctype == null ? null : new ContentTypeMapper( inlineMixins( ctype ), inputTypeResolver.get() );
     }
 
     public List<ContentTypeMapper> getAllContentTypes()
     {
         final ContentTypes types = contentTypeService.get().getAll();
 
-        return types.stream().map( this::inlineMixins ).map( ContentTypeMapper::new ).collect( Collectors.toList() );
+        return types.stream()
+            .map( this::inlineMixins )
+            .map( type -> new ContentTypeMapper( type, inputTypeResolver.get() ) )
+            .collect( Collectors.toList() );
     }
 
     private ContentType inlineMixins( final ContentType contentType )
@@ -63,6 +69,7 @@ public final class ContentTypeHandler
     {
         contentTypeService = context.getService( ContentTypeService.class );
         mixinService = context.getService( MixinService.class );
+        inputTypeResolver = context.getService( InputTypeResolver.class );
     }
 
 }

@@ -8,11 +8,11 @@ import com.enonic.xp.data.ValueTypes;
 final class ImageSelectorType
     extends InputTypeBase
 {
-    public static final ImageSelectorType INSTANCE = new ImageSelectorType();
+    public static final ImageSelectorType INSTANCE = new ImageSelectorType( create().name( InputTypeName.IMAGE_SELECTOR ) );
 
-    private ImageSelectorType()
+    public ImageSelectorType( final Builder builder )
     {
-        super( InputTypeName.IMAGE_SELECTOR );
+        super( builder );
     }
 
     @Override
@@ -25,5 +25,21 @@ final class ImageSelectorType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.REFERENCE );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public ImageSelectorType build()
+        {
+            return new ImageSelectorType( this );
+        }
     }
 }

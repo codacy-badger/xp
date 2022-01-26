@@ -16,7 +16,7 @@ import com.enonic.xp.form.Occurrences;
 import com.enonic.xp.icon.Icon;
 import com.enonic.xp.inputtype.InputTypeConfig;
 import com.enonic.xp.inputtype.InputTypeProperty;
-import com.enonic.xp.inputtype.InputTypes;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.script.serializer.MapGenerator;
 import com.enonic.xp.script.serializer.MapSerializable;
@@ -26,9 +26,12 @@ public final class ContentTypeMapper
 {
     private final ContentType contentType;
 
-    public ContentTypeMapper( final ContentType contentType )
+    private final InputTypeResolver inputTypeResolver;
+
+    public ContentTypeMapper( final ContentType contentType, final InputTypeResolver inputTypeResolver )
     {
         this.contentType = contentType;
+        this.inputTypeResolver = inputTypeResolver;
     }
 
     @Override
@@ -197,8 +200,7 @@ public final class ContentTypeMapper
         {
             try
             {
-                final Value defaultValue = InputTypes.BUILTIN.resolve( input.getInputType() ).
-                    createDefaultValue( input );
+                final Value defaultValue = inputTypeResolver.resolve( input.getInputType() ).createDefaultValue( input );
                 if ( defaultValue != null )
                 {
                     gen.map( "default" );

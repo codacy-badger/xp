@@ -11,9 +11,9 @@ abstract class TextInputTypeBase
 {
     private static final Logger LOG = LoggerFactory.getLogger( LongType.class );
 
-    TextInputTypeBase( final InputTypeName name )
+    TextInputTypeBase( final Builder<?> builder )
     {
-        super( name );
+        super( builder );
     }
 
 
@@ -40,5 +40,11 @@ abstract class TextInputTypeBase
         {
             LOG.warn( "Cannot convert 'max-length' config", e );
         }
+    }
+
+    public abstract static class Builder<T extends Builder<T>>
+        extends InputTypeBase.Builder<T>
+    {
+
     }
 }

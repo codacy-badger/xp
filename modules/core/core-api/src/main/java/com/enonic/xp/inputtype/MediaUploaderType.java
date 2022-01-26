@@ -10,11 +10,11 @@ import com.enonic.xp.data.ValueTypes;
 final class MediaUploaderType
     extends InputTypeBase
 {
-    public static final MediaUploaderType INSTANCE = new MediaUploaderType();
+    public static final MediaUploaderType INSTANCE = new MediaUploaderType( create().name( InputTypeName.MEDIA_UPLOADER ) );
 
-    private MediaUploaderType()
+    private MediaUploaderType( final Builder builder )
     {
-        super( InputTypeName.MEDIA_UPLOADER );
+        super( builder );
     }
 
     @Override
@@ -29,6 +29,22 @@ final class MediaUploaderType
         if ( ContentPropertyNames.MEDIA_ATTACHMENT.equals( property.getName() ) )
         {
             validateType( property, ValueTypes.STRING );
+        }
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public MediaUploaderType build()
+        {
+            return new MediaUploaderType( this );
         }
     }
 }

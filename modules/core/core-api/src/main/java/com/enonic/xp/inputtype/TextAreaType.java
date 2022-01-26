@@ -11,11 +11,11 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 final class TextAreaType
     extends TextInputTypeBase
 {
-    public static final TextAreaType INSTANCE = new TextAreaType();
+    public static final TextAreaType INSTANCE = new TextAreaType( create().name( InputTypeName.TEXT_AREA ) );
 
-    private TextAreaType()
+    public TextAreaType( final Builder builder )
     {
-        super( InputTypeName.TEXT_AREA );
+        super( builder );
     }
 
     @Override
@@ -40,5 +40,21 @@ final class TextAreaType
     {
         validateType( property, ValueTypes.STRING );
         super.validate( property, config );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends TextInputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public TextAreaType build()
+        {
+            return new TextAreaType( this );
+        }
     }
 }

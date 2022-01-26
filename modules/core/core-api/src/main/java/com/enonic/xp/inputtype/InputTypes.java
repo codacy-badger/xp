@@ -9,32 +9,32 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 public final class InputTypes
-    implements Iterable<InputType>, InputTypeResolver
+    implements Iterable<InputType>/*, InputTypeResolver*/
 {
-    public static final InputTypes BUILTIN = InputTypes.create().
-        add( ComboBoxType.INSTANCE ).
-        add( DateType.INSTANCE ).
-        add( TimeType.INSTANCE ).
-        add( DateTimeType.INSTANCE ).
-        add( CheckBoxType.INSTANCE ).
-        add( DoubleType.INSTANCE ).
-        add( GeoPointType.INSTANCE ).
-        add( HtmlAreaType.INSTANCE ).
-        add( ImageUploaderType.INSTANCE ).
-        add( MediaUploaderType.INSTANCE ).
-        add( AttachmentUploaderType.INSTANCE ).
-        add( ImageSelectorType.INSTANCE ).
-        add( MediaSelectorType.INSTANCE ).
-        add( ContentSelectorType.INSTANCE ).
-        add( CustomSelectorType.INSTANCE ).
-        add( RadioButtonType.INSTANCE ).
-        add( TagType.INSTANCE ).
-        add( TextAreaType.INSTANCE ).
-        add( TextLineType.INSTANCE ).
-        add( LongType.INSTANCE ).
-        add( ContentTypeFilterType.INSTANCE ).
-        add( SiteConfiguratorType.INSTANCE ).
-        build();
+    public static final InputTypes BUILTIN = InputTypes.create()
+        .add( ComboBoxType.INSTANCE )
+        .add( DateType.INSTANCE )
+        .add( TimeType.INSTANCE )
+        .add( DateTimeType.INSTANCE )
+        .add( CheckBoxType.INSTANCE )
+        .add( DoubleType.INSTANCE )
+        .add( GeoPointType.INSTANCE )
+        .add( HtmlAreaType.INSTANCE )
+        .add( ImageUploaderType.INSTANCE )
+        .add( MediaUploaderType.INSTANCE )
+        .add( AttachmentUploaderType.INSTANCE )
+        .add( ImageSelectorType.INSTANCE )
+        .add( MediaSelectorType.INSTANCE )
+        .add( ContentSelectorType.INSTANCE )
+        .add( CustomSelectorType.INSTANCE )
+        .add( RadioButtonType.INSTANCE )
+        .add( TagType.INSTANCE )
+        .add( TextAreaType.INSTANCE )
+        .add( TextLineType.INSTANCE )
+        .add( LongType.INSTANCE )
+        .add( ContentTypeFilterType.INSTANCE )
+        .add( SiteConfiguratorType.INSTANCE )
+        .build();
 
     private final ImmutableMap<String, InputType> map;
 
@@ -43,7 +43,7 @@ public final class InputTypes
         this.map = ImmutableMap.copyOf( builder.map );
     }
 
-    @Override
+/*    @Override
     public InputType resolve( final InputTypeName name )
     {
         final InputType type = this.map.get( name.toString().toLowerCase() );
@@ -53,17 +53,22 @@ public final class InputTypes
         }
 
         throw new InputTypeNotFoundException( name );
+    }*/
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public InputType get( final InputTypeName name )
+    {
+        return this.map.get( name.toString().toLowerCase() );
     }
 
     @Override
     public Iterator<InputType> iterator()
     {
         return this.map.values().iterator();
-    }
-
-    public static Builder create()
-    {
-        return new Builder();
     }
 
     public static final class Builder

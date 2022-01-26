@@ -10,6 +10,7 @@ import com.enonic.xp.content.CreateMediaParams;
 import com.enonic.xp.core.impl.content.serializer.ContentDataSerializer;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.form.FormDefaultValuesProcessor;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.media.MediaInfo;
 import com.enonic.xp.media.MediaInfoService;
 import com.enonic.xp.page.PageDescriptorService;
@@ -35,6 +36,8 @@ final class CreateMediaCommand
 
     private final ContentDataSerializer contentDataSerializer;
 
+    private final InputTypeResolver inputTypeResolver;
+
     private CreateMediaCommand( final Builder builder )
     {
         super( builder );
@@ -45,6 +48,7 @@ final class CreateMediaCommand
         this.partDescriptorService = builder.partDescriptorService;
         this.layoutDescriptorService = builder.layoutDescriptorService;
         this.contentDataSerializer = builder.contentDataSerializer;
+        this.inputTypeResolver = builder.inputTypeResolver;
     }
 
     Content execute()
@@ -103,17 +107,18 @@ final class CreateMediaCommand
             inheritPermissions( true ).
             build();
 
-        final CreateContentCommand createCommand = CreateContentCommand.create( this ).
-            mediaInfo( mediaInfo ).
-            params( createContentParams ).
-            siteService( this.siteService ).
-            xDataService( this.xDataService ).
-            formDefaultValuesProcessor( this.formDefaultValuesProcessor ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            allowUnsafeAttachmentNames( this.allowUnsafeAttachmentNames ).
+        final CreateContentCommand createCommand = CreateContentCommand.create( this )
+            .mediaInfo( mediaInfo )
+            .params( createContentParams )
+            .siteService( this.siteService )
+            .xDataService( this.xDataService )
+            .formDefaultValuesProcessor( this.formDefaultValuesProcessor )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .allowUnsafeAttachmentNames( this.allowUnsafeAttachmentNames ).
             build();
 
         return createCommand.execute();
@@ -150,6 +155,8 @@ final class CreateMediaCommand
         private LayoutDescriptorService layoutDescriptorService;
 
         private ContentDataSerializer contentDataSerializer;
+
+        private InputTypeResolver inputTypeResolver;
 
         public Builder params( final CreateMediaParams params )
         {
@@ -193,12 +200,19 @@ final class CreateMediaCommand
             return this;
         }
 
+        Builder inputTypeResolver( final InputTypeResolver value )
+        {
+            this.inputTypeResolver = value;
+            return this;
+        }
+
 
         @Override
         void validate()
         {
             Preconditions.checkNotNull( params, "params must be given" );
             Preconditions.checkNotNull( formDefaultValuesProcessor );
+            Preconditions.checkNotNull( inputTypeResolver );
             super.validate();
         }
 

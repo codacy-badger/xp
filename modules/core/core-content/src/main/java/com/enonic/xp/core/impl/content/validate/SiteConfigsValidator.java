@@ -10,7 +10,7 @@ import com.enonic.xp.content.ContentValidatorParams;
 import com.enonic.xp.content.ValidationError;
 import com.enonic.xp.content.ValidationErrorCode;
 import com.enonic.xp.content.ValidationErrors;
-import com.enonic.xp.inputtype.InputTypes;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.schema.content.ContentTypeName;
 import com.enonic.xp.site.SiteConfig;
 import com.enonic.xp.site.SiteConfigs;
@@ -24,10 +24,13 @@ public class SiteConfigsValidator
 {
     private final SiteService siteService;
 
+    private final InputTypeResolver inputTypeResolver;
+
     @Activate
-    public SiteConfigsValidator( @Reference final SiteService siteService )
+    public SiteConfigsValidator( @Reference final SiteService siteService, @Reference final InputTypeResolver inputTypeResolver )
     {
         this.siteService = siteService;
+        this.inputTypeResolver = inputTypeResolver;
     }
 
     @Override
@@ -53,9 +56,7 @@ public class SiteConfigsValidator
 
                 try
                 {
-                    InputValidator.create()
-                        .form( siteDescriptor.getForm() )
-                        .inputTypeResolver( InputTypes.BUILTIN )
+                    InputValidator.create().form( siteDescriptor.getForm() ).inputTypeResolver( inputTypeResolver )
                         .build()
                         .validate( siteConfig.getConfig() );
                 }

@@ -8,11 +8,16 @@ import com.enonic.xp.data.ValueFactory;
 final class AttachmentUploaderType
     extends InputTypeBase
 {
-    public static final AttachmentUploaderType INSTANCE = new AttachmentUploaderType();
+    public static final AttachmentUploaderType INSTANCE = new AttachmentUploaderType( create().name( InputTypeName.ATTACHMENT_UPLOADER ) );
 
-    private AttachmentUploaderType()
+    private AttachmentUploaderType( final Builder builder )
     {
-        super( InputTypeName.ATTACHMENT_UPLOADER );
+        super( builder );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
     }
 
     @Override
@@ -24,5 +29,16 @@ final class AttachmentUploaderType
     @Override
     public void validate( final Property property, final InputTypeConfig config )
     {
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public AttachmentUploaderType build()
+        {
+            return new AttachmentUploaderType( this );
+        }
     }
 }

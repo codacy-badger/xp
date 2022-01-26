@@ -10,11 +10,11 @@ import com.enonic.xp.data.ValueTypes;
 final class ContentTypeFilterType
     extends InputTypeBase
 {
-    public static final ContentTypeFilterType INSTANCE = new ContentTypeFilterType();
+    public static final ContentTypeFilterType INSTANCE = new ContentTypeFilterType( create().name( InputTypeName.CONTENT_TYPE_FILTER ) );
 
-    private ContentTypeFilterType()
+    private ContentTypeFilterType( final Builder builder )
     {
-        super( InputTypeName.CONTENT_TYPE_FILTER );
+        super( builder );
     }
 
     @Override
@@ -27,5 +27,21 @@ final class ContentTypeFilterType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.STRING );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public ContentTypeFilterType build()
+        {
+            return new ContentTypeFilterType( this );
+        }
     }
 }

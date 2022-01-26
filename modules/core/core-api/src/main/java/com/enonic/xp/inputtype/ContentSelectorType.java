@@ -8,11 +8,11 @@ import com.enonic.xp.data.ValueTypes;
 final class ContentSelectorType
     extends InputTypeBase
 {
-    public static final ContentSelectorType INSTANCE = new ContentSelectorType();
+    public static final ContentSelectorType INSTANCE = new ContentSelectorType( create().name( InputTypeName.CONTENT_SELECTOR ) );
 
-    private ContentSelectorType()
+    public ContentSelectorType( final Builder builder )
     {
-        super( InputTypeName.CONTENT_SELECTOR );
+        super( builder );
     }
 
     @Override
@@ -25,6 +25,22 @@ final class ContentSelectorType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.REFERENCE );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public ContentSelectorType build()
+        {
+            return new ContentSelectorType( this );
+        }
     }
 }
 

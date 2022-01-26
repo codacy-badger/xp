@@ -17,11 +17,11 @@ import com.enonic.xp.form.Input;
 final class DateTimeType
     extends InputTypeBase
 {
-    public static final DateTimeType INSTANCE = new DateTimeType();
+    public static final DateTimeType INSTANCE = new DateTimeType( create().name( InputTypeName.DATE_TIME ) );
 
-    private DateTimeType()
+    public DateTimeType( final Builder builder )
     {
-        super( InputTypeName.DATE_TIME );
+        super( builder );
     }
 
     private boolean useTimeZone( final InputTypeConfig config )
@@ -108,6 +108,22 @@ final class DateTimeType
         catch ( ValueTypeException e )
         {
             return null;
+        }
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public DateTimeType build()
+        {
+            return new DateTimeType( this );
         }
     }
 }

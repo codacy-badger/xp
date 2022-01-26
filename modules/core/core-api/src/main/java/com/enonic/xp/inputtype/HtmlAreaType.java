@@ -9,11 +9,11 @@ import com.enonic.xp.form.Input;
 final class HtmlAreaType
     extends InputTypeBase
 {
-    public static final HtmlAreaType INSTANCE = new HtmlAreaType();
+    public static final HtmlAreaType INSTANCE = new HtmlAreaType( create().name( InputTypeName.HTML_AREA ) );
 
-    private HtmlAreaType()
+    public HtmlAreaType( final Builder builder )
     {
-        super( InputTypeName.HTML_AREA );
+        super( builder );
     }
 
     @Override
@@ -37,5 +37,21 @@ final class HtmlAreaType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.STRING );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public HtmlAreaType build()
+        {
+            return new HtmlAreaType( this );
+        }
     }
 }

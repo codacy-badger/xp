@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.enonic.xp.core.impl.PropertyTreeMarshallerServiceFactory;
 import com.enonic.xp.form.PropertyTreeMarshallerService;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.page.DescriptorKey;
 import com.enonic.xp.scheduler.CalendarService;
 import com.enonic.xp.scheduler.CreateScheduledJobParams;
@@ -38,7 +39,8 @@ class SchedulerConfigImplTest
     @BeforeEach
     void setUp()
     {
-        this.propertyTreeMarshallerService = PropertyTreeMarshallerServiceFactory.newInstance( Mockito.mock( MixinService.class ) );
+        this.propertyTreeMarshallerService =
+            PropertyTreeMarshallerServiceFactory.newInstance( Mockito.mock( MixinService.class ), Mockito.mock( InputTypeResolver.class ) );
         this.calendarService = new CalendarServiceImpl();
     }
 

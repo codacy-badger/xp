@@ -9,6 +9,7 @@ import com.enonic.xp.form.Form;
 import com.enonic.xp.form.Input;
 import com.enonic.xp.form.PropertyTreeMarshallerService;
 import com.enonic.xp.inputtype.InputTypeName;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.page.DescriptorKey;
 import com.enonic.xp.schema.mixin.MixinService;
 import com.enonic.xp.task.SubmitTaskParams;
@@ -35,6 +36,7 @@ class SubmitTaskHandlerTest
         final TaskDescriptorService taskDescriptorService = Mockito.mock( TaskDescriptorService.class );
         addService( TaskDescriptorService.class, taskDescriptorService );
         final MixinService mixinService = Mockito.mock( MixinService.class );
+        final InputTypeResolver inputTypeResolver = Mockito.mock( InputTypeResolver.class );
         addService( MixinService.class, mixinService );
 
         final Form cfg1 = Form.create().
@@ -61,7 +63,8 @@ class SubmitTaskHandlerTest
 
         Mockito.when( mixinService.inlineFormItems( any( Form.class ) ) ).thenAnswer( invocation -> invocation.getArguments()[0] );
 
-        addService( PropertyTreeMarshallerService.class, PropertyTreeMarshallerServiceFactory.newInstance( mixinService ) );
+        addService( PropertyTreeMarshallerService.class,
+                    PropertyTreeMarshallerServiceFactory.newInstance( mixinService, inputTypeResolver ) );
     }
 
     @Test

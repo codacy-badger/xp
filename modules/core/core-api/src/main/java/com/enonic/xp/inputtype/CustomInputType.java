@@ -6,25 +6,38 @@ import com.enonic.xp.data.ValueFactory;
 import com.enonic.xp.data.ValueTypes;
 import com.enonic.xp.form.Input;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
-final class CustomSelectorType
+public final class CustomInputType
     extends InputTypeBase
 {
-    public static final CustomSelectorType INSTANCE = new CustomSelectorType( create().name( InputTypeName.CUSTOM_SELECTOR ) );
-
-    public CustomSelectorType( final Builder builder )
+    private CustomInputType( final Builder builder )
     {
         super( builder );
+    }
+
+//    public static CustomInputType from( final InputTypeName name )
+//    {
+//        if ( ApplicationKey.BASE.equals( name.getApplicationKey() ) )
+//        {
+//            throw new IllegalArgumentException( "Base input type cannot be custom" );
+//        }
+//        else
+//        {
+//            return new CustomInputType( name );
+//        }
+//    }
+
+    public static Builder create()
+    {
+        return new Builder();
     }
 
     @Override
     public Value createDefaultValue( final Input input )
     {
-        final String defaultValue = input.getDefaultValue().getRootValue();
-        if ( !isNullOrEmpty( defaultValue ) )
+        final String rootValue = input.getDefaultValue().getRootValue();
+        if ( rootValue != null )
         {
-            return ValueFactory.newString( defaultValue );
+            return ValueFactory.newString( rootValue );
         }
         return super.createDefaultValue( input );
     }
@@ -41,20 +54,14 @@ final class CustomSelectorType
         validateType( property, ValueTypes.STRING );
     }
 
-    public static Builder create()
-    {
-        return new Builder();
-    }
-
     public static class Builder
         extends InputTypeBase.Builder<Builder>
     {
 
         @Override
-        public CustomSelectorType build()
+        public CustomInputType build()
         {
-            return new CustomSelectorType( this );
+            return new CustomInputType( this );
         }
     }
 }
-

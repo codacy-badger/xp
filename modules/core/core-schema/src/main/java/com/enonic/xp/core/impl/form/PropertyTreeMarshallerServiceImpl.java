@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.form.PropertyTreeMarshallerService;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.schema.mixin.MixinService;
 
 @Component(immediate = true)
@@ -21,10 +22,14 @@ public class PropertyTreeMarshallerServiceImpl
 
     private final MixinService mixinService;
 
+    private final InputTypeResolver inputTypeResolver;
+
     @Activate
-    public PropertyTreeMarshallerServiceImpl( @Reference final MixinService mixinService )
+    public PropertyTreeMarshallerServiceImpl( @Reference final MixinService mixinService,
+                                              @Reference final InputTypeResolver inputTypeResolver )
     {
         this.mixinService = mixinService;
+        this.inputTypeResolver = inputTypeResolver;
     }
 
     @Override
@@ -36,8 +41,8 @@ public class PropertyTreeMarshallerServiceImpl
     @Override
     public PropertyTree marshal( final Map<String, ?> values, final Form form, final boolean strict )
     {
-        return new FormJsonToPropertyTreeTranslator( inlineMixins( form ), strict ).
-            translate( MAPPER.valueToTree( values ) );
+        return new FormJsonToPropertyTreeTranslator( inlineMixins( form ), strict, inputTypeResolver ).translate(
+            MAPPER.valueToTree( values ) );
     }
 
     private Form inlineMixins( final Form form )

@@ -27,7 +27,7 @@ import com.enonic.xp.content.processor.ProcessUpdateResult;
 import com.enonic.xp.core.impl.content.serializer.ContentDataSerializer;
 import com.enonic.xp.core.impl.content.validate.InputValidator;
 import com.enonic.xp.icon.Thumbnail;
-import com.enonic.xp.inputtype.InputTypes;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.media.MediaInfo;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeAccessException;
@@ -60,6 +60,8 @@ final class UpdateContentCommand
 
     private final ContentDataSerializer contentDataSerializer;
 
+    private final InputTypeResolver inputTypeResolver;
+
     private UpdateContentCommand( final Builder builder )
     {
         super( builder );
@@ -69,6 +71,7 @@ final class UpdateContentCommand
         this.partDescriptorService = builder.partDescriptorService;
         this.layoutDescriptorService = builder.layoutDescriptorService;
         this.contentDataSerializer = builder.contentDataSerializer;
+        this.inputTypeResolver = builder.inputTypeResolver;
     }
 
     public static Builder create( final UpdateContentParams params )
@@ -305,9 +308,7 @@ final class UpdateContentCommand
             contentTypeService.getByName( new GetContentTypeParams().contentTypeName( editedContent.getType() ) );
         try
         {
-            InputValidator.create()
-                .form( contentType.getForm() )
-                .inputTypeResolver( InputTypes.BUILTIN )
+            InputValidator.create().form( contentType.getForm() ).inputTypeResolver( inputTypeResolver )
                 .build()
                 .validate( editedContent.getData() );
         }
@@ -348,6 +349,8 @@ final class UpdateContentCommand
         private LayoutDescriptorService layoutDescriptorService;
 
         private ContentDataSerializer contentDataSerializer;
+
+        private InputTypeResolver inputTypeResolver;
 
         Builder( final UpdateContentParams params )
         {
@@ -392,6 +395,12 @@ final class UpdateContentCommand
         Builder contentDataSerializer( final ContentDataSerializer value )
         {
             this.contentDataSerializer = value;
+            return this;
+        }
+
+        Builder inputTypeResolver( final InputTypeResolver value )
+        {
+            this.inputTypeResolver = value;
             return this;
         }
 

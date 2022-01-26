@@ -14,9 +14,6 @@ import com.enonic.xp.data.ValueFactory;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.form.FormItemPath;
 import com.enonic.xp.form.Input;
-import com.enonic.xp.inputtype.InputType;
-import com.enonic.xp.inputtype.InputTypeResolver;
-import com.enonic.xp.inputtype.InputTypes;
 
 
 /**
@@ -30,7 +27,7 @@ public final class JsonToPropertyTreeTranslator
 
     private final PropertyTree propertyTree;
 
-    private final InputTypeResolver inputTypeResolver;
+//    private final InputTypeResolver inputTypeResolver;
 
     private final boolean strictMode;
 
@@ -48,7 +45,7 @@ public final class JsonToPropertyTreeTranslator
         this.form = form != null ? form : Form.create().build();
         this.strictMode = strict;
         this.propertyTree = new PropertyTree();
-        this.inputTypeResolver = InputTypes.BUILTIN;
+//        this.inputTypeResolver = InputTypes.BUILTIN;
     }
 
     public PropertyTree translate( final JsonNode json )
@@ -105,10 +102,10 @@ public final class JsonToPropertyTreeTranslator
         }
         else
         {
-            final InputType type = this.inputTypeResolver.resolve( input.getInputType() );
-            final Value mappedPropertyValue = type.createValue( resolveCoreValue( value ), input.getInputTypeConfig() );
-
-            parent.addProperty( key, mappedPropertyValue );
+//            final InputType type = this.inputTypeResolver.resolve( input.getInputType() );
+//            final Value mappedPropertyValue = type.createValue( resolveCoreValue( value ), input.getInputTypeConfig() );
+//
+//            parent.addProperty( key, mappedPropertyValue );
         }
     }
 

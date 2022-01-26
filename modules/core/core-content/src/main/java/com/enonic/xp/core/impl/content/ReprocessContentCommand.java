@@ -11,6 +11,7 @@ import com.enonic.xp.content.Media;
 import com.enonic.xp.content.ReprocessContentParams;
 import com.enonic.xp.content.UpdateMediaParams;
 import com.enonic.xp.core.impl.content.serializer.ContentDataSerializer;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.media.MediaInfoService;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.UpdateNodeParams;
@@ -36,6 +37,8 @@ final class ReprocessContentCommand
 
     private final ContentDataSerializer contentDataSerializer;
 
+    private final InputTypeResolver inputTypeResolver;
+
     private ReprocessContentCommand( final Builder builder )
     {
         super( builder );
@@ -45,6 +48,7 @@ final class ReprocessContentCommand
         this.partDescriptorService = builder.partDescriptorService;
         this.layoutDescriptorService = builder.layoutDescriptorService;
         this.contentDataSerializer = builder.contentDataSerializer;
+        this.inputTypeResolver = builder.inputTypeResolver;
     }
 
     Content execute()
@@ -75,15 +79,16 @@ final class ReprocessContentCommand
             content( id ).
             name( source.getName() );
 
-        return UpdateMediaCommand.create( updateMediaParams, this ).
-            mediaInfoService( mediaInfoService ).
-            siteService( this.siteService ).
-            contentTypeService( this.contentTypeService ).
-            pageDescriptorService( this.pageDescriptorService ).
-            partDescriptorService( this.partDescriptorService ).
-            layoutDescriptorService( this.layoutDescriptorService ).
-            contentDataSerializer( this.contentDataSerializer ).
-            build().execute();
+        return UpdateMediaCommand.create( updateMediaParams, this )
+            .mediaInfoService( mediaInfoService )
+            .siteService( this.siteService )
+            .contentTypeService( this.contentTypeService )
+            .pageDescriptorService( this.pageDescriptorService )
+            .partDescriptorService( this.partDescriptorService )
+            .layoutDescriptorService( this.layoutDescriptorService )
+            .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
+            .build().execute();
     }
 
     private Content revertModifiedTime( final Content content, final Instant modifiedTime )
@@ -115,6 +120,8 @@ final class ReprocessContentCommand
         private LayoutDescriptorService layoutDescriptorService;
 
         private ContentDataSerializer contentDataSerializer;
+
+        private InputTypeResolver inputTypeResolver;
 
         private Builder( final ReprocessContentParams params )
         {
@@ -148,6 +155,12 @@ final class ReprocessContentCommand
         public Builder contentDataSerializer( final ContentDataSerializer value )
         {
             this.contentDataSerializer = value;
+            return this;
+        }
+
+        public Builder inputTypeResolver( final InputTypeResolver value )
+        {
+            this.inputTypeResolver = value;
             return this;
         }
 

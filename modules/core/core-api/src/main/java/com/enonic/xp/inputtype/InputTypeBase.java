@@ -6,28 +6,41 @@ import com.enonic.xp.data.Value;
 import com.enonic.xp.data.ValueFactory;
 import com.enonic.xp.data.ValueType;
 import com.enonic.xp.form.Input;
+import com.enonic.xp.schema.BaseSchema;
 
 @PublicApi
 public abstract class InputTypeBase
+    extends BaseSchema<InputTypeName>
     implements InputType
 {
-    private final InputTypeName name;
-
-    protected InputTypeBase( final InputTypeName name )
+    protected InputTypeBase( final Builder<?> builder )
     {
-        this.name = name;
+        super( builder );
     }
 
-    @Override
-    public final InputTypeName getName()
+    private static boolean inSet( final ValueType check, final ValueType... types )
     {
-        return name;
+        for ( final ValueType type : types )
+        {
+            if ( type.equals( check ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
+
+//    @Override
+//    public final InputTypeName getName()
+//    {
+//        return name;
+//    }
 
     @Override
     public final String toString()
     {
-        return this.name.toString();
+        return getName().toString();
     }
 
     @Override
@@ -71,19 +84,30 @@ public abstract class InputTypeBase
         }
     }
 
-    private static boolean inSet( final ValueType check, final ValueType... types )
-    {
-        for ( final ValueType type : types )
-        {
-            if ( type.equals( check ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     @Override
     public abstract void validate( Property property, InputTypeConfig config );
+
+    public abstract static class Builder<T extends Builder<T>>
+        extends BaseSchema.Builder<T, InputTypeName>
+    {
+//        protected InputTypeName name;
+
+        protected Builder()
+        {
+            super();
+        }
+
+//        public T name( final InputTypeName name )
+//        {
+//            this.name = name;
+//            return (T)this;
+//        }
+
+        //        protected void validate()
+//        {
+//            Preconditions.checkNotNull( name, "name must be set" );
+//        }
+//
+        public abstract InputTypeBase build();
+    }
 }

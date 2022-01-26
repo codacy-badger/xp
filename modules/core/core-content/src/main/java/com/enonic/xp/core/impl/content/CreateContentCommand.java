@@ -30,7 +30,7 @@ import com.enonic.xp.core.impl.content.serializer.ContentDataSerializer;
 import com.enonic.xp.core.impl.content.validate.InputValidator;
 import com.enonic.xp.data.Property;
 import com.enonic.xp.form.FormDefaultValuesProcessor;
-import com.enonic.xp.inputtype.InputTypes;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.media.MediaInfo;
 import com.enonic.xp.name.NamePrettyfier;
 import com.enonic.xp.node.CreateNodeParams;
@@ -68,6 +68,8 @@ final class CreateContentCommand
 
     private final ContentDataSerializer contentDataSerializer;
 
+    private final InputTypeResolver inputTypeResolver;
+
     private CreateContentCommand( final Builder builder )
     {
         super( builder );
@@ -78,6 +80,7 @@ final class CreateContentCommand
         this.partDescriptorService = builder.partDescriptorService;
         this.layoutDescriptorService = builder.layoutDescriptorService;
         this.contentDataSerializer = builder.contentDataSerializer;
+        this.inputTypeResolver = builder.inputTypeResolver;
     }
 
     static Builder create()
@@ -170,9 +173,7 @@ final class CreateContentCommand
 
             try
             {
-                InputValidator.create()
-                    .form( contentType.getForm() )
-                    .inputTypeResolver( InputTypes.BUILTIN )
+                InputValidator.create().form( contentType.getForm() ).inputTypeResolver( inputTypeResolver )
                     .build()
                     .validate( params.getData() );
             }
@@ -348,6 +349,8 @@ final class CreateContentCommand
 
         private ContentDataSerializer contentDataSerializer;
 
+        private InputTypeResolver inputTypeResolver;
+
         private Builder()
         {
         }
@@ -396,6 +399,12 @@ final class CreateContentCommand
         Builder contentDataSerializer( final ContentDataSerializer value )
         {
             this.contentDataSerializer = value;
+            return this;
+        }
+
+        Builder inputTypeResolver( final InputTypeResolver value )
+        {
+            this.inputTypeResolver = value;
             return this;
         }
 

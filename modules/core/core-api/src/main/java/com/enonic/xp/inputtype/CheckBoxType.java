@@ -13,13 +13,13 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 final class CheckBoxType
     extends InputTypeBase
 {
-    public static final CheckBoxType INSTANCE = new CheckBoxType();
+    public static final CheckBoxType INSTANCE = new CheckBoxType( create().name( InputTypeName.CHECK_BOX ) );
 
     private static final String VALID_VALUE = "checked";
 
-    private CheckBoxType()
+    public CheckBoxType( final Builder builder )
     {
-        super( InputTypeName.CHECK_BOX );
+        super( builder );
     }
 
     @Override
@@ -47,5 +47,21 @@ final class CheckBoxType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.BOOLEAN );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public CheckBoxType build()
+        {
+            return new CheckBoxType( this );
+        }
     }
 }

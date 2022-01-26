@@ -22,6 +22,7 @@ import com.enonic.xp.core.impl.content.validate.ContentNameValidator;
 import com.enonic.xp.data.PropertyPath;
 import com.enonic.xp.data.PropertyTree;
 import com.enonic.xp.event.EventPublisher;
+import com.enonic.xp.inputtype.InputTypeResolver;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeAlreadyExistAtPathException;
 import com.enonic.xp.node.NodeId;
@@ -74,6 +75,8 @@ class RenameContentCommandTest
 
     ContentDataSerializer contentDataSerializer;
 
+    InputTypeResolver inputTypeResolver;
+
     @BeforeEach
     void setUp()
     {
@@ -86,6 +89,7 @@ class RenameContentCommandTest
         this.pageDescriptorService = mock( PageDescriptorService.class );
         this.partDescriptorService = mock( PartDescriptorService.class );
         this.layoutDescriptorService = mock( LayoutDescriptorService.class );
+        this.inputTypeResolver = mock( InputTypeResolver.class );
 
         this.contentDataSerializer = ContentDataSerializer.create()
             .layoutDescriptorService( layoutDescriptorService )
@@ -205,6 +209,7 @@ class RenameContentCommandTest
             .contentValidators( List.of( new ContentNameValidator() ) )
             .layoutDescriptorService( this.layoutDescriptorService )
             .contentDataSerializer( this.contentDataSerializer )
+            .inputTypeResolver( this.inputTypeResolver )
             .build();
     }
 }

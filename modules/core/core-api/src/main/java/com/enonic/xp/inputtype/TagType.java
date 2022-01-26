@@ -8,11 +8,11 @@ import com.enonic.xp.data.ValueTypes;
 final class TagType
     extends InputTypeBase
 {
-    public static final TagType INSTANCE = new TagType();
+    public static final TagType INSTANCE = new TagType( create().name( InputTypeName.TAG ) );
 
-    private TagType()
+    public TagType( final Builder builder )
     {
-        super( InputTypeName.TAG );
+        super( builder );
     }
 
     @Override
@@ -25,6 +25,22 @@ final class TagType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.STRING );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public TagType build()
+        {
+            return new TagType( this );
+        }
     }
 }
 

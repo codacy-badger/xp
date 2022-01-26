@@ -13,11 +13,11 @@ import com.enonic.xp.form.Input;
 final class TimeType
     extends InputTypeBase
 {
-    public static final TimeType INSTANCE = new TimeType();
+    public static final TimeType INSTANCE = new TimeType( create().name( InputTypeName.TIME ) );
 
-    private TimeType()
+    private TimeType( final Builder builder )
     {
-        super( InputTypeName.TIME );
+        super( builder );
     }
 
     @Override
@@ -58,5 +58,21 @@ final class TimeType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.LOCAL_TIME );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public TimeType build()
+        {
+            return new TimeType( this );
+        }
     }
 }

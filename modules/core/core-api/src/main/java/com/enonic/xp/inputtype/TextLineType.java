@@ -13,11 +13,11 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 final class TextLineType
     extends TextInputTypeBase
 {
-    public static final TextLineType INSTANCE = new TextLineType();
+    public static final TextLineType INSTANCE = new TextLineType( create().name( InputTypeName.TEXT_LINE ) );
 
-    private TextLineType()
+    public TextLineType( final Builder builder )
     {
-        super( InputTypeName.TEXT_LINE );
+        super( builder );
     }
 
     private String regexp( final InputTypeConfig config )
@@ -61,5 +61,21 @@ final class TextLineType
         }
 
         super.validate( property, config );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends TextInputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public TextLineType build()
+        {
+            return new TextLineType( this );
+        }
     }
 }

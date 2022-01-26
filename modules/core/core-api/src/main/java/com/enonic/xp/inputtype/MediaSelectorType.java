@@ -8,11 +8,11 @@ import com.enonic.xp.data.ValueTypes;
 final class MediaSelectorType
     extends InputTypeBase
 {
-    public static final MediaSelectorType INSTANCE = new MediaSelectorType();
+    public static final MediaSelectorType INSTANCE = new MediaSelectorType( create().name( InputTypeName.MEDIA_SELECTOR ) );
 
-    private MediaSelectorType()
+    public MediaSelectorType( final Builder builder )
     {
-        super( InputTypeName.MEDIA_SELECTOR );
+        super( builder );
     }
 
     @Override
@@ -25,5 +25,21 @@ final class MediaSelectorType
     public void validate( final Property property, final InputTypeConfig config )
     {
         validateType( property, ValueTypes.REFERENCE );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public MediaSelectorType build()
+        {
+            return new MediaSelectorType( this );
+        }
     }
 }

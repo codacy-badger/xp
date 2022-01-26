@@ -46,6 +46,10 @@ public final class ResourceServiceImpl
     @Override
     public Resource getResource( final ResourceKey key )
     {
+        if ( "html".equals( key.getExtension() ) )
+        {
+            int i = 0;
+        }
         return findApplicationUrlResolver( key.getApplicationKey() ).map( urlResolver -> urlResolver.findUrl( key.getPath() ) )
             .map( url -> new UrlResource( key, url ) )
             .orElse( new UrlResource( key, null ) );

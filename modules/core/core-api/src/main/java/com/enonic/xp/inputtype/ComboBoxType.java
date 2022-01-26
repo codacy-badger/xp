@@ -11,11 +11,11 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 final class ComboBoxType
     extends InputTypeBase
 {
-    public static final ComboBoxType INSTANCE = new ComboBoxType();
+    public static final ComboBoxType INSTANCE = new ComboBoxType( create().name( InputTypeName.COMBO_BOX ) );
 
-    private ComboBoxType()
+    public ComboBoxType( final Builder builder )
     {
-        super( InputTypeName.COMBO_BOX );
+        super( builder );
     }
 
     @Override
@@ -43,5 +43,21 @@ final class ComboBoxType
         final String valueAsString = property.getString();
         final boolean flag = ( valueAsString != null ) && config.hasAttributeValue( "option", "value", valueAsString );
         validateValue( property, flag, "Value is not a valid option" );
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+        extends InputTypeBase.Builder<Builder>
+    {
+
+        @Override
+        public ComboBoxType build()
+        {
+            return new ComboBoxType( this );
+        }
     }
 }
