@@ -53,7 +53,7 @@ public final class InputTypeHandler
     {
 //        WebHandlerHelper.checkAdminAccess( webRequest );
 
-        PortalRequest portalRequest = (PortalRequest) webRequest;
+        PortalRequest portalRequest = new PortalRequest( webRequest );
         portalRequest.setContextPath( portalRequest.getBaseUri() );
 
         final InputTypeHandlerWorker worker = buildWorker( portalRequest );
