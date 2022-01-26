@@ -63,7 +63,7 @@ public final class TextRenderer
         {
             if ( text.startsWith( "[" ) ) // TODO need proper way to identify AST
             {
-                text =  astRender( text );
+                text = astRender( text );
             }
             switch ( renderMode )
             {
@@ -113,7 +113,8 @@ public final class TextRenderer
         return portalRequest == null ? RenderMode.LIVE : portalRequest.getMode();
     }
 
-    private String astRender(String value) {
+    private String astRender( String value )
+    {
 
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -124,7 +125,7 @@ public final class TextRenderer
         }
         catch ( JsonProcessingException e )
         {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException( e );
         }
 
         astChildrenRender( jsonNode, sb );
@@ -154,7 +155,7 @@ public final class TextRenderer
                         sb.append( "</blockquote>" );
                         break;
                     case "link":
-                        sb.append( "<a href=\"" ).append( HtmlHelper.escapeHtml( element.get( "url" ).asText() ) ).append( "\">" );
+                        sb.append( "<a " ).append( HtmlHelper.escapedHtmlAttribute( "href", element.get( "url" ).asText() ) ).append( ">" );
                         astChildrenRender( element.get( "children" ), sb );
                         sb.append( "</a>" );
                 }

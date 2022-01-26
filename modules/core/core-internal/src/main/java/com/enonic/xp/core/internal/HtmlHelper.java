@@ -1,6 +1,7 @@
 package com.enonic.xp.core.internal;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Entities;
 import org.jsoup.parser.Parser;
 
@@ -35,6 +36,11 @@ public final class HtmlHelper
             return text;
         }
         return Entities.escape( text );
+    }
+
+    public static String escapedHtmlAttribute( String key, String value )
+    {
+        return new Attribute( key, value ).html();
     }
 
     /**
