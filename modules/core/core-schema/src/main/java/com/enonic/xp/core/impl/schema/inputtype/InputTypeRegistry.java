@@ -1,7 +1,6 @@
 package com.enonic.xp.core.impl.schema.inputtype;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -11,9 +10,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.enonic.xp.app.Application;
 import com.enonic.xp.app.ApplicationKey;
-import com.enonic.xp.app.ApplicationListener;
 import com.enonic.xp.inputtype.InputType;
 import com.enonic.xp.inputtype.InputTypeName;
 import com.enonic.xp.inputtype.InputTypeResolver;
@@ -22,7 +19,7 @@ import com.enonic.xp.resource.ResourceService;
 
 @Component(immediate = true)
 public final class InputTypeRegistry
-    implements InputTypeResolver, ApplicationListener
+    implements InputTypeResolver/*, ApplicationListener*/
 {
     private static final Logger LOG = LoggerFactory.getLogger( InputTypeRegistry.class );
 
@@ -50,30 +47,35 @@ public final class InputTypeRegistry
             .build();
     }
 
-    @Override
-    public void activated( final Application application )
-    {
-        final Set<InputTypeName> names = inputTypeLoader.findNames( application.getKey() );
+//    @Override
+//    public void activated( final Application application )
+//    {
+//        final Set<InputTypeName> names = inputTypeLoader.findNames( application.getKey() );
+//
+//        names.forEach( name -> {
+//            final InputType inputType = inputTypeLoader.get( name );
+//            inputTypes.put( name, inputType );
+//        } );
+//    }
 
-        names.forEach( name -> {
-            final InputType inputType = inputTypeLoader.get( name );
-            inputTypes.put( name, inputType );
-        } );
-    }
-
-    @Override
-    public void deactivated( final Application application )
-    {
-        final ApplicationKey applicationKey = application.getKey();
-        final Set<InputTypeName> names =
-            inputTypes.keySet().stream().filter( name -> applicationKey.equals( name.getApplicationKey() ) ).collect( Collectors.toSet() );
-
-        names.forEach( inputTypes::remove );
-    }
+//    @Override
+//    public void deactivated( final Application application )
+//    {
+//        final ApplicationKey applicationKey = application.getKey();
+//        final Set<InputTypeName> names =
+//            inputTypes.keySet().stream().filter( name -> applicationKey.equals( name.getApplicationKey() ) ).collect( Collectors.toSet() );
+//
+//        names.forEach( inputTypes::remove );
+//    }
 
     @Override
     public InputType resolve( final InputTypeName name )
     {
-        return inputTypes.get( name );
+        if ( ApplicationKey.BASE.equals( name.getApplicationKey() ) )
+        {
+            return inputTypes.get( name );
+        }
+
+        return inputTypeLoader.get( name );
     }
 }
