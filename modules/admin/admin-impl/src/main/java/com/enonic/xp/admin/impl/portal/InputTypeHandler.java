@@ -31,7 +31,7 @@ public final class InputTypeHandler
 
     public static final String INPUT_TYPE_PREFIX = INPUT_TYPE_START + "/";
 
-    public static final Pattern PATTERN = Pattern.compile( "^([^/^_]+)/([^/^_]+)/([^/^_]+)" );
+    public static final Pattern PATTERN = Pattern.compile( "^([^/]+)/([^/]+)/(.+)" );
 
     private ResourceService resourceService;
 
