@@ -2,7 +2,8 @@ package com.enonic.xp.xml.parser;
 
 import com.enonic.xp.annotation.PublicApi;
 import com.enonic.xp.app.ApplicationRelativeResolver;
-import com.enonic.xp.inputtype.InputTypeBase;
+import com.enonic.xp.data.ValueTypes;
+import com.enonic.xp.inputtype.CustomInputType;
 import com.enonic.xp.xml.DomElement;
 
 @PublicApi
@@ -13,10 +14,10 @@ public final class XmlInputTypeParser
 
     private ApplicationRelativeResolver resolver;
 
-    private InputTypeBase.Builder builder;
+    private CustomInputType.Builder builder;
 
 
-    public XmlInputTypeParser builder( final InputTypeBase.Builder builder )
+    public XmlInputTypeParser builder( final CustomInputType.Builder builder )
     {
         this.builder = builder;
         return this;
@@ -28,6 +29,8 @@ public final class XmlInputTypeParser
     {
         this.resolver = new ApplicationRelativeResolver( this.currentApplication );
         assertTagName( root, "input-type" );
+
+        this.builder.valueType( ValueTypes.getByName( root.getChildValueTrimmed( "value-type" ) ) );
 
         //TODO: process all other fields
     }

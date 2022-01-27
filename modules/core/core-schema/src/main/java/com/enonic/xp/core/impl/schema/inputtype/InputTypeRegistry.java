@@ -25,7 +25,7 @@ public final class InputTypeRegistry
 
     private final Map<InputTypeName, InputType> inputTypes;
 
-    private InputTypeLoader inputTypeLoader;
+    private final InputTypeLoader inputTypeLoader;
 
     @Activate
     public InputTypeRegistry( @Reference final ResourceService resourceService )
