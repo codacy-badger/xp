@@ -19,6 +19,7 @@ import com.enonic.xp.portal.RenderMode;
 import com.enonic.xp.portal.url.PortalUrlService;
 import com.enonic.xp.portal.url.ProcessHtmlParams;
 import com.enonic.xp.region.TextComponent;
+import com.enonic.xp.region.TextComponentType;
 
 import static com.enonic.xp.portal.impl.rendering.RenderingConstants.PORTAL_COMPONENT_ATTRIBUTE;
 
@@ -54,7 +55,7 @@ public final class TextRenderer
 
         portalResponseBuilder.contentType( MediaType.create( "text", "html" ) ).postProcess( false );
 
-        String text = textComponent.getText();
+        final String text = textComponent.getText();
         if ( text.isEmpty() )
         {
             renderEmptyTextComponent( textComponent, portalRequest, portalResponseBuilder );
@@ -63,13 +64,17 @@ public final class TextRenderer
         {
             if ( text.startsWith( "[" ) ) // TODO need proper way to identify AST
             {
-                text = astRender( text );
+                final String template = renderMode == RenderMode.EDIT ? COMPONENT_EDIT_MODE_HTML : COMPONENT_PREVIEW_MODE_HTML;
+
+                final String renderedHtml = astRender( text );
+                portalResponseBuilder.body( MessageFormat.format( template, TextComponentType.INSTANCE, renderedHtml ) );
+                return portalResponseBuilder.build();
             }
+
             switch ( renderMode )
             {
                 case EDIT:
-                    portalResponseBuilder.body(
-                        MessageFormat.format( COMPONENT_EDIT_MODE_HTML, textComponent.getType().toString(), text ) );
+                    portalResponseBuilder.body( MessageFormat.format( COMPONENT_EDIT_MODE_HTML, TextComponentType.INSTANCE, text ) );
                     break;
 
                 case LIVE:
@@ -79,7 +84,7 @@ public final class TextRenderer
                     ProcessHtmlParams params = new ProcessHtmlParams().portalRequest( portalRequest ).value( text );
                     final String processedHtml = removeEmptyFigCaptionTags( service.processHtml( params ) );
                     portalResponseBuilder.body(
-                        MessageFormat.format( COMPONENT_PREVIEW_MODE_HTML, textComponent.getType().toString(), processedHtml ) );
+                        MessageFormat.format( COMPONENT_PREVIEW_MODE_HTML, TextComponentType.INSTANCE, processedHtml ) );
                     break;
             }
         }
@@ -115,7 +120,6 @@ public final class TextRenderer
 
     private String astRender( String value )
     {
-
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         final JsonNode jsonNode;
@@ -158,6 +162,12 @@ public final class TextRenderer
                         sb.append( "<a " ).append( HtmlHelper.escapedHtmlAttribute( "href", element.get( "url" ).asText() ) ).append( ">" );
                         astChildrenRender( element.get( "children" ), sb );
                         sb.append( "</a>" );
+                        break;
+                    case "image":
+                        sb.append( "<img " ).append( HtmlHelper.escapedHtmlAttribute( "src", element.get( "url" ).asText() ) ).append( ">" );
+                        astChildrenRender( element.get( "children" ), sb );
+                        sb.append( "</img>" );
+                        break;
                 }
             }
             else if ( element.hasNonNull( "text" ) )
