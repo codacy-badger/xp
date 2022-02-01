@@ -118,7 +118,7 @@ public final class TextRenderer
         return portalRequest == null ? RenderMode.LIVE : portalRequest.getMode();
     }
 
-    private String astRender( String value )
+    String astRender( String value )
     {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -132,8 +132,38 @@ public final class TextRenderer
             throw new IllegalStateException( e );
         }
 
-        astChildrenRender( jsonNode, sb );
+        astChildrenRenderEditorJs( jsonNode, sb );
         return sb.toString();
+    }
+
+    void astChildrenRenderEditorJs( JsonNode arrayNode, StringBuilder sb ) {
+        if ( !arrayNode.isArray() )
+        {
+            throw new IllegalStateException( "Expecting an array" );
+        }
+        for ( JsonNode element : arrayNode )
+        {
+            if ( element.hasNonNull( "type" ) )
+            {
+                switch ( element.get( "type" ).asText() )
+                {
+                    case "paragraph":
+                        sb.append( "<p>" );
+                        sb.append( element.get( "data" ).get( "text" ) );
+                        sb.append( "</p>" );
+                        break;
+                    case "header":
+                        sb.append( "<h" ).append( element.get( "data" ).get( "level" ) ).append( ">" );
+                        sb.append( element.get( "data" ).get( "text" ) );
+                        sb.append( "</h" ).append( element.get( "data" ).get( "level" )).append( ">" );
+                        break;
+                }
+            }
+            else if ( element.hasNonNull( "text" ) )
+            {
+                sb.append( HtmlHelper.escapeHtml( element.get( "text" ).asText() ) );
+            }
+        }
     }
 
     void astChildrenRender( JsonNode arrayNode, StringBuilder sb )
