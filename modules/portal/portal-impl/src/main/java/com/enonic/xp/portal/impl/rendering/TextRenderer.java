@@ -136,7 +136,8 @@ public final class TextRenderer
         return sb.toString();
     }
 
-    void astChildrenRenderEditorJs( JsonNode arrayNode, StringBuilder sb ) {
+    void astChildrenRenderEditorJs( JsonNode arrayNode, StringBuilder sb )
+    {
         if ( !arrayNode.isArray() )
         {
             throw new IllegalStateException( "Expecting an array" );
@@ -149,13 +150,13 @@ public final class TextRenderer
                 {
                     case "paragraph":
                         sb.append( "<p>" );
-                        sb.append( element.get( "data" ).get( "text" ) );
+                        sb.append( HtmlHelper.escapeHtml( element.get( "data" ).get( "text" ).asText() ) );
                         sb.append( "</p>" );
                         break;
                     case "header":
-                        sb.append( "<h" ).append( element.get( "data" ).get( "level" ) ).append( ">" );
-                        sb.append( element.get( "data" ).get( "text" ) );
-                        sb.append( "</h" ).append( element.get( "data" ).get( "level" )).append( ">" );
+                        sb.append( "<h" ).append( element.get( "data" ).get( "level" ).asInt() ).append( ">" );
+                        sb.append( HtmlHelper.escapeHtml( element.get( "data" ).get( "text" ).asText() ) );
+                        sb.append( "</h" ).append( element.get( "data" ).get( "level" ).asInt() ).append( ">" );
                         break;
                 }
             }
@@ -194,7 +195,9 @@ public final class TextRenderer
                         sb.append( "</a>" );
                         break;
                     case "image":
-                        sb.append( "<img " ).append( HtmlHelper.escapedHtmlAttribute( "src", element.get( "url" ).asText() ) ).append( ">" );
+                        sb.append( "<img " )
+                            .append( HtmlHelper.escapedHtmlAttribute( "src", element.get( "url" ).asText() ) )
+                            .append( ">" );
                         astChildrenRender( element.get( "children" ), sb );
                         sb.append( "</img>" );
                         break;
